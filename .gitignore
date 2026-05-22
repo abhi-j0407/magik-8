@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+*.tsbuildinfo
+coverage
+dev-dist
+.playwright-browsers
+test-results
+playwright-report
