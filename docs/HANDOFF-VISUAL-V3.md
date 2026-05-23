@@ -2,7 +2,7 @@
 id: handoff-visual-v3
 version: 1.0.0
 status: active
-current_phase: G3
+current_phase: G4
 webgl_flag: off (default until G9 sign-off)
 deploy_url: null
 ---
@@ -17,40 +17,37 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — G2
+## Handoff — G3
 **Status:** complete
-**Agent:** G2 implementer
-**Branch / PR:** merged to `main` @ daf174d (squash; remote `phase/g2-ball` deleted)
+**Agent:** G3 implementer
+**Branch / PR:** merged to `main` @ 7072158 (squash; remote `phase/g3-window` deleted)
 **Changed:**
-- src/three/Ball.tsx — MeshPhysicalMaterial sphere + procedural embossed "8" disc
-- src/three/Lighting.tsx — HDRI Environment + key (upper-left) + rim back light
-- src/three/OracleScene.tsx — Ball + Lighting + ContactShadows; ACES/sRGB; removed CSS drop-shadow
-- public/hdri/studio_small_08_1k.hdr + README.md — Poly Haven CC0 env map
-- scripts/generate-eight-texture.mjs — documents procedural texture path
+- src/three/AnswerWindow.tsx — glass recess on −Z, MeshTransmissionMaterial, static liquid, phase visibility
+- src/three/Die.tsx — icosahedron d20, triangular placeholder facet, sunk/surfaced by phase
+- src/three/OracleScene.tsx — Ball + AnswerWindow in shared assembly group
 **Verified:**
 - `npx tsc -b` — exit 0
-- `npm run build` — exit 0; OracleScene chunk ~956 kB; dist/hdri/*.hdr present
-- `npm test` — 8 files, 45 tests passed
+- `npm run build` — exit 0; OracleScene chunk ~972 kB
+- `npm test` — 45 passed
 - `npm run test:e2e` — 3 passed (flag off)
-- /code-review — self-review: no blockers; workbox precache still omits `.hdr` (static serve OK; note for G9)
-- visual — flag-on: glossy ball, rim edge, "8" on +Z, ContactShadows ground (manual VITE_WEBGL=true)
-**Acceptance:** §5.2 material params; §5.4 lighting; defect 2 rim separation; defect 6 ContactShadows replaces button drop-shadow; flag-off regression green
-**Integration:** `Ball` + `Lighting` mounted in `OracleCanvas`; HDRI at `/hdri/studio_small_08_1k.hdr`; G3 adds AnswerWindow/Die in same Canvas
-**Next:** G3 — MeshTransmissionMaterial window + liquid volume + icosahedron die (settled pose)
+- /code-review — no blockers
+- visual — manual VITE_WEBGL=true recommended (idle only "8"; reveal shows centered glass + die)
+**Acceptance:** §5.2 glass params; static liquid tokens; die facet; window −Z vs "8" +Z; idle/shaking hidden; revealing/answered visible; flag-off green; Ball.tsx untouched
+**Integration:** Exports AnswerWindow, Die, WINDOW_RADIUS, DIE_WINDOW_RADIUS; parenting `<group><Ball/><AnswerWindow/></group>`; ROT_SETTLED=[0,π,0]; G4 replaces cylinder liquid with Liquid.tsx; G5 unified tumble + ANIMATION_DONE
+**Next:** G4 — animated liquid surface + meniscus + shake slosh
 **Blockers:** none
 **Notes for next agent:**
-- `createEightDiscTexture()` in Ball.tsx — stripe/eight/sphereWarm tokens; edit for disc art tweaks
-- Phase spin/bob on `<group>` wrapping ball+disc (unchanged from G1 placeholder behavior)
-- No ANIMATION_DONE / AnswerWindow / post / GSAP yet
-- OracleScene button no longer uses CSS filter drop-shadow — shadow from ContactShadows only
-- HDRI ~1.4 MB in dist; extend workbox glob for `.hdr` in G9 if offline env required
+- BALL_RADIUS=1 duplicated in AnswerWindow/Die (export from Ball in G5 if needed)
+- G5: move AnswerWindow into Ball groupRef for unified spin; hide "8" disc when window front-center
+- WebGL still no ANIMATION_DONE until G5; CSS path uses AnswerTriangle
+- Cylinders along window Z; glass renderOrder above liquid
 ```
 
 ## Phase checklist
 
 - [x] **G1** — Foundation & seam (deps, `OracleStage` flag + capability, lazy placeholder Canvas, CSS fallback)
 - [x] **G2** — The ball (glossy `MeshPhysicalMaterial`, HDRI `<Environment>`, key+rim lights, `<ContactShadows>`, "8" disc) — *fixes defect 2, 6*
-- [ ] **G3** — Window mechanism (glass + cobalt liquid + d20 die + triangular answer face, settled) — *fixes defect 3, 5, 6*
+- [x] **G3** — Window mechanism (glass + cobalt liquid + d20 die + triangular answer face, settled) — *fixes defect 3, 5, 6*
 - [ ] **G4** — Liquid & bob (animated surface shader, meniscus, shake-driven slosh)
 - [ ] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
 - [ ] **G6** — Text behind glass (die-face `Text`/`Text3D`, auto-fit/wrap, amber easter-egg) — *fixes defect 4*
@@ -62,8 +59,8 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/AnswerWindow.tsx`, `Die.tsx` | G3 | G3 merged |
-| `src/three/OracleScene.tsx` (mount window/die) | G3 | G3 merged |
+| `src/three/Liquid.tsx`, `src/three/shaders/liquid.*` | G4 | G4 merged |
+| `src/three/AnswerWindow.tsx` (swap static liquid → Liquid) | G4 | G4 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`, or `src/index.css` at once.
 
@@ -89,6 +86,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 | State logic | `useOracleMachine` / `useShake` / `OracleContext` / answers — unchanged; V3 swaps render layer only |
 | Deploy | Overseer-only; no agent runs Vercel CLI (per `DEPLOY-VERCEL.md`) |
 | G1 low-power | `hardwareConcurrency <= 2` OR `deviceMemory <= 2` → CSS MagikBall |
+| G3 window pose | Recess −Z; ROT_SETTLED πY faces camera; visible only revealing/answered |
 
 ## Verification gates
 
@@ -103,7 +101,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 |-------|------|-------|
 | Flag-off = today's behavior | yes | G1 — e2e 3/3, Vitest 45/45 |
 | Ball separated from bg | yes | G2 — rim + HDRI + ContactShadows |
-| Window centered on reveal | — | G3/G5 |
+| Window centered on reveal | partial | G3 static settled; G5 choreography |
 | Liquid sloshes / settles | — | G4 |
 | Text behind glass, fits longest answer | — | G6 |
 | Modes centered | — | G8 |
