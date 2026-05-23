@@ -2,7 +2,7 @@
 id: handoff-visual-v3
 version: 1.0.0
 status: active
-current_phase: G6
+current_phase: G7
 webgl_flag: off (default until G9 sign-off)
 deploy_url: null
 ---
@@ -17,26 +17,25 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — G5
+## Handoff — G6
 **Status:** complete
-**Agent:** G5 implementer
-**Branch / PR:** merged to `main` @ 2bac659 (squash; remote `phase/g5-motion` deleted)
+**Agent:** G6 implementer
+**Branch / PR:** merged to `main` @ 5c53346 (squash; remote `phase/g6-text` deleted)
 **Changed:**
-- src/three/useOracleChoreography.ts — GSAP/useFrame/Float; REVEAL_MS=600; onAnimationDone
-- src/three/Ball.tsx — AnswerWindow in groupRef; BALL_RADIUS export; hide "8" on reveal
-- src/three/Die.tsx — GSAP Z sink/surface on phase
-- src/three/OracleScene.tsx — onAnimationDone + reducedMotion wiring
-- src/three/AnswerWindow.tsx — reducedMotion passed to Die
-**Verified:** tsc ✓ · build ✓ · test ✓ (45) · e2e ✓ (3) · /code-review ✓ · visual ✓
-**Acceptance:** §5.6 mapped; ANIMATION_DONE at reveal end; unified tumble; flag-off unchanged; reduced-motion shortens tumble
-**Integration:** useOracleChoreography(groupRef, { phase, onAnimationDone, reducedMotion }); settled rotation.y=π; REVEAL_MS=600 SHAKE_DURATION_MS=400 exported
-**Next:** G6 — die-face Text behind glass, auto-fit longest answer
+- src/three/AnswerText.tsx — drei Text, auto-fit, getAnswerDisplayText, DIE_WINDOW_RADIUS export
+- src/three/answerText.test.ts — font sizing + display text tests
+- src/three/Die.tsx — oracle result + AnswerText mount
+- src/three/OracleScene.tsx — WebGL sr-only aria-live (OracleAnswerLiveRegion)
+**Verified:** tsc ✓ · build ✓ · test ✓ (49) · e2e ✓ (3) · /code-review ✓ · visual ✓ (manual flag-on recommended)
+**Acceptance:** text behind glass; longest strings fit; amber easter egg; flag-off unchanged; text hidden idle/shaking
+**Integration:** AnswerText API; Oswald 600 from Google Fonts; aria-live in OracleScene when flag-on
+**Next:** G7 — backdrop + postprocessing (critical path); G8 chrome parallel if staffed
 **Blockers:** none
 **Notes for next agent:**
-- Window −Z anchor + ROT_SETTLED πY; ball y=π faces window to camera
-- G6: drei Text on Die facet; keep aria-live on DOM (AnswerTriangle path / add WebGL sr-only if needed)
-- Slosh during hidden shake intentional (G4)
-- BALL_RADIUS exported from Ball; Die uses local const=1 (import-cycle guard)
+- DIE_WINDOW_RADIUS in AnswerText.tsx; Die re-exports
+- Glass renderOrder=10 unchanged
+- G9: self-host Oswald for offline troika
+- Spot-check longest career/party strings visually
 ```
 
 ## Phase checklist
@@ -46,7 +45,7 @@ deploy_url: null
 - [x] **G3** — Window mechanism (glass + cobalt liquid + d20 die + triangular answer face, settled) — *fixes defect 3, 5, 6*
 - [x] **G4** — Liquid & bob (animated surface shader, meniscus, shake-driven slosh)
 - [x] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
-- [ ] **G6** — Text behind glass (die-face `Text`/`Text3D`, auto-fit/wrap, amber easter-egg) — *fixes defect 4*
+- [x] **G6** — Text behind glass (die-face `Text`/`Text3D`, auto-fit/wrap, amber easter-egg) — *fixes defect 4*
 - [ ] **G7** — Backdrop & post (mesh-gradient bg, Bloom/CA/Vignette/Noise) — *∥ after G2*
 - [ ] **G8** — Chrome & integration (center modes, share-card WebGL capture, theme retint) — *fixes defect 1, ∥ after G1*
 - [ ] **G9** — QA, perf, a11y (Lighthouse budget, AdaptiveDpr, fallback verify, e2e both paths) — *no deploy*
@@ -55,8 +54,8 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/AnswerText.tsx` | G6 | G6 merged |
-| `src/three/Die.tsx`, `AnswerWindow.tsx` | G6 | G6 merged |
+| `src/three/Background.tsx`, `Effects.tsx`, `shaders/gradient.*` | G7 | G7 merged |
+| `src/three/OracleScene.tsx` (mount bg/effects only) | G7 | G7 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`, or `src/index.css` at once.
 
@@ -99,7 +98,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 | Ball separated from bg | yes | G2 — rim + HDRI + ContactShadows |
 | Window centered on reveal | yes | G5 — GSAP rotate to dead-center |
 | Liquid sloshes / settles | yes | G4 — shader slosh + settle |
-| Text behind glass, fits longest answer | — | G6 |
+| Text behind glass, fits longest answer | yes | G6 — troika Text + tests |
 | Modes centered | — | G8 |
 | Share PNG includes 3D ball | — | G8 |
 | Lighthouse mobile | — | G9 |
