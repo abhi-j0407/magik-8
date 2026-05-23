@@ -1,5 +1,6 @@
-import { ContactShadows } from '@react-three/drei';
+import { AdaptiveDpr, ContactShadows } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { useEffect, useState } from 'react';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './AnswerText';
@@ -11,17 +12,31 @@ import { useWebglCapability } from './useWebglCapability';
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
+/** Mobile DPR clamp — AdaptiveDpr may lower further under load. */
+const DPR_MIN = 1;
+const DPR_MAX = 1.5;
+
 function OracleCanvas() {
   const { phase, onAnimationDone } = useOracle();
   const { prefersReducedMotion } = useWebglCapability();
+  const [frameloop, setFrameloop] = useState<'always' | 'demand'>('always');
+
+  useEffect(() => {
+    const sync = () => setFrameloop(document.hidden ? 'demand' : 'always');
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    return () => document.removeEventListener('visibilitychange', sync);
+  }, []);
 
   return (
     <Canvas
       camera={{ position: [0, 0, 2.8], fov: 42 }}
-      dpr={[1, 2]}
+      dpr={[DPR_MIN, DPR_MAX]}
+      frameloop={frameloop}
       gl={{
         antialias: true,
         alpha: true,
+        // G8: required for share PNG readback when WebGL is on. No Lighthouse impact while VITE_WEBGL default is false.
         preserveDrawingBuffer: true,
         toneMapping: ACESFilmicToneMapping,
         outputColorSpace: SRGBColorSpace,
@@ -31,6 +46,7 @@ function OracleCanvas() {
       }}
       style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
     >
+      <AdaptiveDpr pixelated />
       <color attach="background" args={['transparent']} />
       <Background />
       <Lighting />

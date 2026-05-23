@@ -4,9 +4,13 @@ const previewHost = '127.0.0.1';
 const previewPort = 4173;
 const baseURL = `http://${previewHost}:${previewPort}`;
 
+const previewCmd = `npm run build && npm run preview -- --host ${previewHost} --port ${previewPort}`;
+const previewWebglCmd =
+  'VITE_WEBGL=true VITE_WEBGL_E2E=true npm run build && npm run preview -- --host 127.0.0.1 --port 4173';
+
 export default defineConfig({
   testDir: './e2e',
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
@@ -15,11 +19,29 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  webServer: {
-    command: `npm run preview -- --host ${previewHost} --port ${previewPort}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      testIgnore: '**/webgl.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      webServer: {
+        command: previewCmd,
+        url: baseURL,
+        reuseExistingServer: false,
+        timeout: 180_000,
+      },
+    },
+    {
+      name: 'chromium-webgl',
+      testMatch: '**/webgl.spec.ts',
+      timeout: 60_000,
+      use: { ...devices['Desktop Chrome'] },
+      webServer: {
+        command: previewWebglCmd,
+        url: baseURL,
+        reuseExistingServer: false,
+        timeout: 240_000,
+      },
+    },
+  ],
 });

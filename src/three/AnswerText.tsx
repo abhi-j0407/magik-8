@@ -7,9 +7,8 @@ import { resolveM8Color } from './tokens';
 /** Answer-window aperture on die face — keep in sync with AnswerWindow recess. */
 export const DIE_WINDOW_RADIUS = 0.26;
 
-/** Oswald 600 — matches `--m8-font-answer` in index.css. */
-const ANSWER_FONT =
-  'https://fonts.gstatic.com/s/oswald/v53/TK3iWkUHHAIjg752Fj8.woff';
+/** Oswald 600 — self-hosted; matches `--m8-font-answer` in index.css (G9 workbox precache). */
+const ANSWER_FONT = '/fonts/oswald-600.woff2';
 
 /** Longest pack strings (career / party / easter eggs) must fit inside the triangular facet. */
 export const ANSWER_TEXT_MAX_WIDTH = DIE_WINDOW_RADIUS * 1.48;

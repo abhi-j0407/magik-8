@@ -6,6 +6,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 const useHttps = process.env.VITE_HTTPS === 'true';
 
+const cacheFirstYear = {
+  expiration: {
+    maxEntries: 32,
+    maxAgeSeconds: 60 * 60 * 24 * 365,
+  },
+};
+
 export default defineConfig({
   plugins: [
     react(),
@@ -14,7 +21,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,ttf,hdr}'],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/.*(?:three|OracleScene|fiber|drei|postprocessing).*\.js$/i,
@@ -25,6 +32,22 @@ export default defineConfig({
                 maxEntries: 24,
                 maxAgeSeconds: 60 * 60 * 24 * 365,
               },
+            },
+          },
+          {
+            urlPattern: /\/hdri\/.*\.hdr$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'oracle-hdri',
+              ...cacheFirstYear,
+            },
+          },
+          {
+            urlPattern: /\/fonts\/.*\.(?:woff2?|ttf)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'oracle-fonts',
+              ...cacheFirstYear,
             },
           },
         ],

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 /** Fail-closed WebGL1/2 probe (detached canvas, context released immediately). */
-function detectWebGL(): boolean {
+export function detectWebGL(): boolean {
   if (typeof document === 'undefined') return false;
   try {
     const canvas = document.createElement('canvas');
@@ -24,10 +24,9 @@ function detectWebGL(): boolean {
  * Low-power heuristic: ≤2 logical cores or ≤2 GiB device memory (when exposed).
  * Documented in HANDOFF-VISUAL-V3 — keeps WebGL off constrained phones.
  */
-function detectLowPower(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  const cores = navigator.hardwareConcurrency ?? 8;
-  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+export function detectLowPower(nav: Navigator = typeof navigator !== 'undefined' ? navigator : ({} as Navigator)): boolean {
+  const cores = nav.hardwareConcurrency ?? 8;
+  const memory = (nav as Navigator & { deviceMemory?: number }).deviceMemory;
   if (cores <= 2) return true;
   if (memory !== undefined && memory <= 2) return true;
   return false;
