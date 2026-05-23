@@ -2,8 +2,8 @@
 id: handoff-visual-v4-cywarr
 version: 1.0.0
 status: active
-current_phase: F4
-webgl_flag: off (user enables via VITE_WEBGL=true once F4 lands and visual QA passes)
+current_phase: F5
+webgl_flag: off (user enables via VITE_WEBGL=true after manual flag-on QA — see coordinator sign-off)
 deploy_url: null
 ---
 
@@ -18,26 +18,26 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F3
+## Handoff — F4
 **Status:** complete (squash-merged to main)
-**Agent:** F3 implementer
-**Branch / PR:** fix/v4-f3-ink-panel — merged to main (4b04a2f)
+**Agent:** F4 implementer
+**Branch / PR:** fix/v4-f4-opacity-reveal — merged to main (e514f43)
 **Changed:**
-- src/three/answerAtlas.ts + answerAtlas.test.ts — phrase CanvasTexture atlas
-- src/three/AnswerPanel.tsx — instanced ink panel + answerPanelUniforms singleton
-- src/three/Ball.tsx — AnswerWindow → AnswerPanel
-- src/three/OracleScene.tsx — aria-live import from answerAtlas
-- Deleted: Die, Liquid, AnswerWindow, AnswerText, answerText.test, liquid shaders
-**Verified:** tsc ✓ · build ✓ · test ✓ (60) · e2e ✓ (5) · coordinator re-check ✓ · flag-off ✓ · visual ✓ (webgl e2e)
-**Acceptance:** V3 answer stack removed; cywarr ink panel + atlas; answerPanelUniforms exported; texture bound on revealing/answered; easter-egg amber; e2e green
-**Integration:** answerPanelUniforms { baseVisibility, textVisibility, text, isEasterEgg, inkTextTint, setText }; LENS_TOP_Y=0.75; getAnswerTexture / getAnswerDisplayText in answerAtlas.ts
-**Next:** F4 — Opacity reveal choreography
+- src/three/useOracleChoreography.ts — uniform tweens, no rotation
+- src/three/oracleSceneClock.ts — oracleSceneTime + oracleSceneTimeScale
+- src/three/oracleChoreography.test.ts — phase sequence + reduced-motion tests
+- src/three/AnswerPanel.tsx — removed phase uniform overrides
+- src/three/Ball.tsx — jitter group, timeScale in useFrame, choreography wiring
+**Verified:** tsc ✓ · build ✓ · test ✓ (64) · e2e ✓ (5) · coordinator re-check ✓ · flag-off ✓ · visual ✓ (webgl e2e)
+**Acceptance:** rotation removed; timeScale shake; 300+300ms opacity reveal; reset timeline; reduced motion instant; killTweensOf not context.revert
+**Integration:** answerPanelUniforms owned by choreography; oracleSceneClock.ts + Ball re-exports; applyOracleChoreographyPhase for tests
+**Next:** F5 — Deletes, deps, verification, docs
 **Blockers:** none
 **Notes for next agent:**
-- Remove AnswerPanel phase static overrides (answered/revealing) once F4 owns tweens
-- revealing keeps textVisibility=0 until answered today — F4 chains 300ms+300ms during revealing
-- Delete rotation symbols from useOracleChoreography; tween timeScale on oracleSceneTime
-- Manual: VITE_WEBGL=true — triangle + rings + phrase, amber on easter egg
+- Keep oracleSceneClock.ts to avoid circular imports
+- Remove @react-three/postprocessing + postprocessing from package.json
+- F5 owns DPR cap, e2e canvas-stays assertions, lighthouse, V3 doc supersession
+- Manual VITE_WEBGL=true QA before prod flag flip
 ```
 
 ## Phase checklist
@@ -45,18 +45,20 @@ deploy_url: null
 - [x] **F1** — Kill the Suspense fallback paths *(drop drei Environment + Text + transmission, error boundary, context-loss listener, relax capability probe, `renderingLocked` CSS prop)*
 - [x] **F2** — cywarr ball geometry, camera, lighting, backdrop *(partial-sphere shell + lens cap, FBM shimmer, simplex-noise sky, ambient + equirect JPG)*
 - [x] **F3** — Answer ink panel + stylised "8" *(4 instanced quads, triangle + 2 rings SDF, CanvasTexture phrase atlas, easter-egg amber)*
-- [ ] **F4** — Opacity reveal choreography *(no rotation; baseVisibility + textVisibility tweens; timeScale shake)*
+- [x] **F4** — Opacity reveal choreography *(no rotation; baseVisibility + textVisibility tweens; timeScale shake)*
 - [ ] **F5** — Deletes, deps, verification, docs *(remove postprocessing if unused, DPR cap, e2e + lighthouse, supersede V3 docs)*
 
 ## Active locks
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/useOracleChoreography.ts` | F4 | F4 merged |
-| `src/three/oracleChoreography.test.ts` (new) | F4 | F4 merged |
-| `src/three/OracleScene.tsx` (wire time/timeScale if needed) | F4 | F4 merged |
-| `src/three/AnswerPanel.tsx` (remove phase uniform overrides) | F4 | F4 merged |
-| `src/three/Ball.tsx` (oracleSceneTimeScale + hook wiring) | F4 | F4 merged |
+| `package.json` + `package-lock.json` | F5 | F5 merged |
+| `vite.config.ts` | F5 | F5 merged |
+| `src/three/OracleScene.tsx` (DPR cap only) | F5 | F5 merged |
+| `e2e/webgl.spec.ts` + `e2e/__snapshots__/*` | F5 | F5 merged |
+| `docs/PLAN-VISUAL-V3.md`, `HANDOFF-VISUAL-V3.md` | F5 | F5 merged |
+| `docs/HANDOFF-VISUAL-V4-CYWARR.md`, `PLAN-VISUAL-V4-CYWARR.md` | F5 | F5 merged |
+| `scripts/lighthouse.mjs` (thresholds if needed) | F5 | F5 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/components/OracleStage.tsx`,
 `src/components/MagikBall.tsx`, `vite.config.ts`, `src/index.css`, or any single `src/three/*` file at
@@ -104,7 +106,7 @@ once. Coordinator records ownership before spawning each phase.
 | 3D canvas never replaced by CSS during reveal | partial | F1 webgl e2e green; F5 strengthens assertion |
 | Ball reads as deep glossy 8-ball, not chrome | ✓ | F2 coordinator re-check + implementer visual |
 | Ink panel renders triangle + "8" rings + answer text inside lens | partial | F3 shipped; manual lens QA recommended |
-| Reveal = opacity fade (no rotation), `ANIMATION_DONE` dispatched | — | F4 acceptance |
+| Reveal = opacity fade (no rotation), `ANIMATION_DONE` dispatched | ✓ | F4 coordinator re-check + oracleChoreography tests |
 | `OracleErrorBoundary` swaps to CSS on runtime error | ✓ | F1 shipped |
 | Easter-egg amber tint visible | partial | F3 code path; manual easter-egg QA |
 | Lighthouse mobile (flag-off) | — | F5 |
