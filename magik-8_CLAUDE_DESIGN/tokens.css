@@ -1,0 +1,149 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   MAGIK 8 — DESIGN TOKENS V2
+   Single source of truth. Mirror into src/index.css.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── stage / surface ────────────────────────────────────────────────── */
+  --m8-bg:              oklch(13% 0.008 270);   /* deep stage, faintly cool */
+  --m8-bg-elev:         oklch(17% 0.008 270);   /* sheets, dialogs          */
+  --m8-rule:            oklch(24% 0.008 270);   /* 1px dividers, chrome     */
+  --m8-rule-hi:         oklch(34% 0.012 268);   /* hover/focus borders      */
+
+  /* ── sphere (the ball) ──────────────────────────────────────────────── */
+  --m8-sphere-rim:      oklch(4%  0     0);     /* the very edge, near-black */
+  --m8-sphere-core:     oklch(9%  0.004 270);   /* main body                 */
+  --m8-sphere-mid:      oklch(15% 0.006 270);   /* mid-tone                  */
+  --m8-sphere-hi:       oklch(34% 0.010 268);   /* upper-left soft highlight */
+  --m8-sphere-spec:     oklch(96% 0.010 90);    /* hard specular dot         */
+  --m8-sphere-warm:     oklch(22% 0.020 60);    /* warm bottom bounce        */
+
+  /* ── stripe / numeral on the ball ───────────────────────────────────── */
+  --m8-stripe:          oklch(95% 0.014 92);    /* warm ivory white field    */
+  --m8-stripe-shadow:   oklch(78% 0.020 90);    /* slight curvature shadow   */
+  --m8-eight:           oklch(9%  0.004 270);   /* numeral black             */
+
+  /* ── triangle window + cobalt ink ───────────────────────────────────── */
+  --m8-cavity-rim:      oklch(3%  0     0);     /* bezel around window       */
+  --m8-cavity-dark:     oklch(8%  0.040 265);   /* deep cavity shadow        */
+  --m8-fluid-deep:      oklch(18% 0.150 262);   /* ink at depth              */
+  --m8-fluid-mid:       oklch(30% 0.170 258);   /* core cobalt               */
+  --m8-fluid-hi:        oklch(46% 0.180 252);   /* surface highlight         */
+  --m8-fluid-meniscus:  oklch(72% 0.110 240);   /* thin top edge line        */
+  --m8-answer-ink:      oklch(95% 0.014 92);    /* answer text — warm ivory  */
+  --m8-answer-glow:     oklch(65% 0.080 240);   /* subtle text glow          */
+
+  /* ── accents ─────────────────────────────────────────────────────────── */
+  --m8-amber:           oklch(78% 0.135 78);    /* wordmark "8", easter egg  */
+  --m8-amber-dim:       oklch(58% 0.100 78);    /* hover/dim                 */
+
+  /* ── chrome / text ──────────────────────────────────────────────────── */
+  --m8-chrome:          oklch(72% 0.005 270);   /* primary UI text           */
+  --m8-chrome-dim:      oklch(54% 0.005 270);   /* secondary                 */
+  --m8-chrome-mute:     oklch(40% 0.005 270);   /* tertiary, disabled        */
+
+  /* ── danger / status ────────────────────────────────────────────────── */
+  --m8-danger:          oklch(60% 0.180 28);
+
+  /* ── type stack ─────────────────────────────────────────────────────── */
+  --m8-font-wordmark:   "VT323", "Courier New", ui-monospace, monospace;
+  --m8-font-answer:     "Oswald", "Bebas Neue", "Archivo Narrow", "Arial Narrow", sans-serif;
+  --m8-font-numeral:    "Helvetica Neue", "Helvetica", "Arial Black", sans-serif;
+  --m8-font-ui:         "Tahoma", "Verdana", "Geneva", system-ui, sans-serif;
+  --m8-font-hud:        "VT323", "Courier New", ui-monospace, monospace;
+
+  /* ── type scale (mobile-first) ──────────────────────────────────────── */
+  --m8-text-wordmark:   22px;   /* header brand                 */
+  --m8-text-wordmark-l: 56px;   /* share card / hero            */
+  --m8-text-hud:        11px;   /* HUD numerals, micro-labels   */
+  --m8-text-ui-sm:      11px;   /* chip labels, captions        */
+  --m8-text-ui:         13px;   /* body chrome                  */
+  --m8-text-ui-lg:      15px;   /* CTA labels                   */
+  --m8-text-answer:     clamp(14px, 4.4vw, 22px); /* in window  */
+  --m8-text-answer-l:   88px;   /* share card answer            */
+  --m8-text-eight:      clamp(64px, 22vw, 124px); /* ball "8"   */
+
+  /* ── motion (REQ-020, FIX-3 ritual-locked) ──────────────────────────── */
+  --m8-dur-idle:        4000ms;    /* idle float loop          */
+  --m8-dur-shake:       400ms;     /* shake wobble             */
+  --m8-dur-reveal:      600ms;     /* fluid rise               */
+  --m8-dur-text-fade:   200ms;     /* answer text stagger      */
+  --m8-ease-toy:        cubic-bezier(.22, 1, .36, 1);  /* gentle overshoot */
+  --m8-ease-ink:        cubic-bezier(.16, .8, .3, 1);  /* ink rise         */
+
+  /* ── spacing / layout ────────────────────────────────────────────────── */
+  --m8-ball-size:       min(70vh, 360px);
+  --m8-triangle-w:      48%;      /* of ball diameter */
+  --m8-radius-chip:     999px;
+  --m8-radius-sheet:    16px;
+  --m8-radius-card:     12px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   GLOBAL: grain + vignette utilities
+   ───────────────────────────────────────────────────────────────────────── */
+
+.m8-grain::before {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+  opacity: 0.08;
+  z-index: 50;
+}
+
+.m8-vignette::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 30%,
+    oklch(8% 0.005 270 / 0.45) 75%,
+    oklch(4% 0.005 270 / 0.75) 100%);
+  z-index: 40;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   WORDMARK
+   ───────────────────────────────────────────────────────────────────────── */
+
+.m8-wordmark {
+  font-family: var(--m8-font-wordmark);
+  font-size: var(--m8-text-wordmark);
+  letter-spacing: 0.04em;
+  color: var(--m8-stripe);
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.9),
+    0 -1px 0 rgba(255,255,255,0.06),
+    0 2px 6px rgba(0,0,0,0.5);
+  user-select: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5em;
+  line-height: 1;
+}
+.m8-wordmark .m8-wm-eight {
+  color: var(--m8-amber);
+  font-size: 1.25em;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.9),
+    0 0 14px oklch(78% 0.135 78 / 0.55),
+    0 0 2px oklch(78% 0.135 78 / 0.85);
+}
+.m8-wordmark .m8-wm-bracket {
+  color: var(--m8-chrome-mute);
+  font-size: 0.85em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PREFERS REDUCED MOTION
+   ───────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --m8-dur-idle:   0ms;
+    --m8-dur-shake:  0ms;
+    --m8-dur-reveal: 0ms;
+  }
+}

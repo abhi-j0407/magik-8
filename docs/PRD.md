@@ -12,10 +12,10 @@ status: active
 |-------|-------|
 | Product | Magik 8 PWA |
 | Version | 1.0.0 |
-| Status | Approved for implementation |
+| Status | Implemented (v1 + Design V2) |
 | Case study | External (not in repo) |
 
-**Related docs:** [PRODUCT](./PRODUCT.md) · [DESIGN](./DESIGN.md) · [ARCHITECTURE](./ARCHITECTURE.md) · [ANSWERS](./ANSWERS.md) · [SENSORS](./SENSORS.md) · [WORKFLOW](./WORKFLOW.md)
+**Related docs:** [PRODUCT](./PRODUCT.md) · [DESIGN-V2](./DESIGN-V2.md) · [ARCHITECTURE](./ARCHITECTURE.md) · [ANSWERS](./ANSWERS.md) · [SENSORS](./SENSORS.md) · [WORKFLOW](./WORKFLOW.md)
 
 ---
 
@@ -53,22 +53,22 @@ Mobile-first installable PWA with shake-to-reveal (and accessible fallback), thr
 **User story:** As a visitor, I hold a yes/no question, shake, and read one answer without navigation.
 
 **Acceptance:**
-- [ ] One viewport-focused screen; no router required
-- [ ] Instruction visible in `idle`: mental question + shake hint
-- [ ] Theme chips visible before shake
-- [ ] No question text field; no history list
+- [x] One viewport-focused screen; no router required
+- [x] Instruction visible in `idle`: mental question + shake hint
+- [x] Theme chips visible before shake
+- [x] No question text field; no history list
 
-**Components:** UX-001–007 per [DESIGN.md](./DESIGN.md)
+**Components:** UX-001–007 per [DESIGN-V2.md](./DESIGN-V2.md)
 
 ---
 
 ## REQ-010 — State machine
 
 **Acceptance:**
-- [ ] Phases: `idle` → `shaking` → `revealing` → `answered`
-- [ ] `THEME_CHANGE` only when `idle` or `answered`
-- [ ] New shake from `answered` starts new cycle
-- [ ] Unit tests for transition guards
+- [x] Phases: `idle` → `shaking` → `revealing` → `answered`
+- [x] `THEME_CHANGE` only when `idle` or `answered`
+- [x] New cycle from `answered` requires explicit `RESET`, then shake/tap from `idle` (FIX-3 ritual lock)
+- [x] Unit tests for transition guards
 
 **Spec:** [ARCHITECTURE.md](./ARCHITECTURE.md)
 
@@ -77,26 +77,26 @@ Mobile-first installable PWA with shake-to-reveal (and accessible fallback), thr
 ## REQ-015 — Neutral answer hint
 
 **Acceptance:**
-- [ ] After reveal, if `category === 'neutral'`, show secondary hint text
-- [ ] User can shake again immediately
+- [x] After reveal, if `category === 'neutral'`, show secondary hint text
+- [x] User can reset and ask again immediately (CTA / ball tap)
 
 ---
 
 ## REQ-020 — Motion design
 
 **Acceptance:**
-- [ ] Idle float, shake wobble, fluid reveal per DESIGN
-- [ ] `prefers-reduced-motion: reduce` disables float/wobble; answer still shows
-- [ ] No Three.js
+- [x] Idle float, shake wobble, fluid reveal per DESIGN-V2
+- [x] `prefers-reduced-motion: reduce` disables float/wobble; answer still shows
+- [x] No Three.js
 
 ---
 
 ## REQ-030 — Shake detection
 
 **Acceptance:**
-- [ ] `useShake` implements SENSORS algorithm
-- [ ] Throttle ~30Hz; cooldown 1000ms
-- [ ] Fires `onShake` → oracle `SHAKE_OR_TAP`
+- [x] `useShake` implements SENSORS algorithm
+- [x] Throttle ~30Hz; cooldown 2000ms (FIX-3 tuning)
+- [x] Fires `onShake` → oracle `SHAKE_OR_TAP`
 
 **Spec:** [SENSORS.md](./SENSORS.md)
 
@@ -105,54 +105,54 @@ Mobile-first installable PWA with shake-to-reveal (and accessible fallback), thr
 ## REQ-031 — iOS motion permission
 
 **Acceptance:**
-- [ ] PermissionSheet with explainer + button
-- [ ] `requestPermission` only on click
-- [ ] Granted → listener attached; denied → fallback mode
+- [x] PermissionSheet with explainer + button
+- [x] `requestPermission` only on click
+- [x] Granted → listener attached; denied → fallback mode
 
 ---
 
 ## REQ-032 — Fallback input
 
 **Acceptance:**
-- [ ] ShakeCTA visible always on desktop
-- [ ] Space key triggers shake event on desktop
-- [ ] Denied iOS motion → CTA primary
+- [x] ShakeCTA visible always on desktop
+- [x] Space key triggers shake event on desktop
+- [x] Denied iOS motion → CTA primary
 
 ---
 
 ## REQ-033 — HTTPS
 
 **Acceptance:**
-- [ ] `dev:https` script documented in README
-- [ ] Production deploy on HTTPS host
-- [ ] HANDOFF records `deploy_url`
+- [x] `dev:https` script documented in README
+- [ ] Production deploy on HTTPS host (overseer)
+- [ ] HANDOFF records `deploy_url` (overseer)
 
 ---
 
 ## REQ-040 — Sound
 
 **Acceptance:**
-- [ ] SFX-01 on shake start, SFX-02 on reveal
-- [ ] Mute toggle persists
-- [ ] No sound until user gesture if platform requires
+- [x] SFX-01 on shake start, SFX-02 on reveal
+- [x] Mute toggle persists
+- [x] No sound until user gesture if platform requires
 
 ---
 
 ## REQ-041 — Haptics
 
 **Acceptance:**
-- [ ] Vibrate on shake detect and reveal (if supported)
-- [ ] No error if unsupported
+- [x] Vibrate on shake detect and reveal (if supported)
+- [x] No error if unsupported
 
 ---
 
 ## REQ-045 — Easter eggs
 
 **Acceptance:**
-- [ ] First-visit egg once (ANSWERS `egg-first-visit`)
-- [ ] 1/40 random egg otherwise
-- [ ] SFX-03 + accent color on egg
-- [ ] Unit test: RNG stub hits egg at expected rate (statistical smoke)
+- [x] First-visit egg once (ANSWERS `egg-first-visit`)
+- [x] 1/40 random egg otherwise
+- [x] SFX-03 + accent color on egg
+- [x] Unit test: RNG stub hits egg at expected rate (statistical smoke)
 
 **Copy:** [ANSWERS.md](./ANSWERS.md)
 
@@ -161,28 +161,28 @@ Mobile-first installable PWA with shake-to-reveal (and accessible fallback), thr
 ## REQ-050 — Share
 
 **Acceptance:**
-- [ ] Generate 1080×1920 PNG from ShareCard component
-- [ ] Web Share API with file if supported; else download
-- [ ] Includes answer text + Magik 8 wordmark + theme label
+- [x] Generate 1080×1920 PNG from ShareCard component
+- [x] Web Share API with file if supported; else download
+- [x] Includes answer text + Magik 8 wordmark + theme label
 
 ---
 
 ## REQ-060 — PWA
 
 **Acceptance:**
-- [ ] manifest: name, icons 192/512, `display: standalone`, theme_color
-- [ ] Service worker precaches app shell
-- [ ] Airplane mode: app loads after prior visit
+- [x] manifest: name, icons 192/512, `display: standalone`, theme_color
+- [x] Service worker precaches app shell
+- [x] Airplane mode: app loads after prior visit
 
 ---
 
 ## REQ-070 — Accessibility
 
 **Acceptance:**
-- [ ] `aria-live` announces new answer
-- [ ] All controls keyboard-focusable with visible focus
-- [ ] Touch targets ≥44px
-- [ ] Lighthouse a11y ≥95 mobile
+- [x] `aria-live` announces new answer
+- [x] All controls keyboard-focusable with visible focus
+- [x] Touch targets ≥44px
+- [x] Lighthouse a11y ≥95 mobile (100 in automated run)
 
 ---
 
@@ -215,8 +215,9 @@ Implement `pickAnswer` uniform random 0..19.
 | PHASE-2 | Tap reveals answer; state tests pass |
 | PHASE-3 | iPhone shake works after grant; fallback works on deny |
 | PHASE-4 | All themes + mute + eggs |
-| PHASE-5 | Share PNG + PWA icons/manifest + offline shell (`npm run build` passes) |
+| PHASE-5 | Share PNG + PWA icons/manifest + offline shell |
 | PHASE-6 | QA matrix signed; Lighthouse targets met |
+| Design V2 (D1–D8) | Visual integration per DESIGN-V2 + coordinator doc |
 | Post–PHASE-6 | Overseer deploys; HANDOFF `deploy_url` set (not an agent task) |
 
 ---
@@ -225,5 +226,6 @@ Implement `pickAnswer` uniform random 0..19.
 
 | Item | Status |
 |------|--------|
-| Deploy host preference | Vercel or Cloudflare — decide at PHASE-5 |
+| Deploy host preference | Vercel (`vercel.json` present) |
 | Custom domain | Optional |
+| Device QA (audio, Android shake) | Overseer — see BACKLOG B-02, B-03 |

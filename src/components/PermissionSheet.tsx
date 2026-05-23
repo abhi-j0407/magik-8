@@ -9,7 +9,7 @@ export function PermissionSheet({ open, onEnable, onDismiss }: PermissionSheetPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center"
+      className="m8-sheet-scrim"
       role="presentation"
       onClick={onDismiss}
     >
@@ -17,32 +17,36 @@ export function PermissionSheet({ open, onEnable, onDismiss }: PermissionSheetPr
         role="dialog"
         aria-labelledby="permission-sheet-title"
         aria-describedby="permission-sheet-desc"
-        className="w-full max-w-md rounded-2xl border border-(--magik-sphere-highlight) bg-(--magik-sphere) p-6 shadow-lg"
+        className="m8-sheet"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2
-          id="permission-sheet-title"
-          className="font-(--font-answer) text-xl tracking-wide uppercase"
-        >
-          Enable shake
+        <div className="m8-sheet-handle" aria-hidden />
+        <h2 id="permission-sheet-title" className="m8-sheet-title">
+          enable shake
         </h2>
-        <p id="permission-sheet-desc" className="mt-3 text-sm leading-relaxed text-(--magik-muted)">
-          Magik 8 uses motion to feel your shake. Tap to allow — we never store sensor data.
+        <p id="permission-sheet-desc" className="m8-sheet-body">
+          Magik 8 uses motion to feel your shake.
+          <br />
+          Tap to allow — we never store sensor data.
         </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row-reverse">
-          <button
-            type="button"
-            onClick={onEnable}
-            className="min-h-11 rounded-full bg-(--magik-fluid) px-6 py-3 text-sm font-medium text-(--magik-answer-text) transition-colors hover:bg-(--magik-fluid-light) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light)"
-          >
-            Allow motion
+        <div className="m8-sheet-actions">
+          <button type="button" className="m8-cta" onClick={onEnable}>
+            <span className="m8-cta-corner m8-cta-corner-tl" aria-hidden>
+              ┌
+            </span>
+            <span className="m8-cta-corner m8-cta-corner-tr" aria-hidden>
+              ┐
+            </span>
+            <span className="m8-cta-corner m8-cta-corner-bl" aria-hidden>
+              └
+            </span>
+            <span className="m8-cta-corner m8-cta-corner-br" aria-hidden>
+              ┘
+            </span>
+            <span className="m8-cta-label">allow motion</span>
           </button>
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="min-h-11 rounded-full border border-(--magik-sphere-highlight) px-6 py-3 text-sm text-(--magik-muted) transition-colors hover:border-(--magik-fluid-light) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light)"
-          >
-            Not now
+          <button type="button" className="m8-link-btn" onClick={onDismiss}>
+            not now
           </button>
         </div>
       </div>

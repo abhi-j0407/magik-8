@@ -20,59 +20,157 @@ export function MagikBall() {
   };
 
   return (
-    <motion.button
-      type="button"
-      className="relative mx-auto block cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--magik-fluid-light)"
-      style={{ width: BALL_SIZE, height: BALL_SIZE }}
-      aria-label={
-        answered
-          ? 'Magik 8 ball — tap to ask again'
-          : 'Magik 8 ball — tap or shake to reveal'
-      }
-      disabled={busy}
-      onClick={handleBallClick}
-      animate={
-        reducedMotion
-          ? isShaking
-            ? { opacity: [1, 0.85, 1] }
-            : { opacity: 1 }
-          : isShaking
-            ? { rotate: [-8, 8, -6, 6, 0] }
-            : idleFloat
-              ? { y: [0, -6, 0] }
-              : { y: 0 }
-      }
-      transition={
-        isShaking
-          ? { duration: 0.4, ease: 'easeInOut' }
-          : idleFloat
-            ? { duration: 4, repeat: Infinity, ease: 'easeInOut' }
-            : { duration: 0.3 }
-      }
-    >
-      <div
-        className="relative h-full w-full overflow-hidden rounded-full shadow-[inset_-12px_-24px_40px_rgba(0,0,0,0.55),inset_8px_12px_24px_rgba(255,255,255,0.06)]"
+    <div className="relative mx-auto" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
+      <motion.button
+        type="button"
+        className="m8-ball relative block h-full w-full cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-(--m8-fluid-hi)"
+        aria-label={
+          answered
+            ? 'Magik 8 ball — tap to ask again'
+            : 'Magik 8 ball — tap or shake to reveal'
+        }
+        disabled={busy}
+        onClick={handleBallClick}
+        animate={
+          reducedMotion
+            ? isShaking
+              ? { opacity: [1, 0.85, 1] }
+              : { opacity: 1 }
+            : isShaking
+              ? { rotate: [-8, 7, -6, 5, 0] }
+              : idleFloat
+                ? { y: [0, -6, 0] }
+                : { y: 0 }
+        }
+        transition={
+          isShaking
+            ? { duration: 0.4, ease: 'easeInOut' }
+            : idleFloat && !reducedMotion
+              ? { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+              : { duration: reducedMotion ? 0 : 0.3 }
+        }
         style={{
-          background: `radial-gradient(circle at 32% 28%, var(--magik-sphere-highlight) 0%, var(--magik-sphere) 55%, #050505 100%)`,
+          filter:
+            'drop-shadow(0 18px 28px rgba(0,0,0,0.55)) drop-shadow(0 4px 8px rgba(0,0,0,0.4))',
         }}
       >
-        <div
-          className="absolute left-1/2 top-[18%] flex h-[42%] w-[42%] -translate-x-1/2 items-center justify-center rounded-full bg-(--magik-stripe) shadow-[inset_0_2px_8px_rgba(0,0,0,0.15)] transition-opacity duration-300"
-          style={{ opacity: hideEight ? 0 : 1 }}
-          aria-hidden={hideEight}
-        >
-          <span
-            className="font-(--font-answer) text-[clamp(3rem,18vw,5.5rem)] leading-none text-(--magik-eight)"
-            aria-hidden
-          >
-            8
-          </span>
-        </div>
+        <div className="relative isolate h-full w-full overflow-hidden rounded-full">
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                'radial-gradient(circle at 35% 30%, var(--m8-sphere-mid) 0%, var(--m8-sphere-core) 45%, var(--m8-sphere-rim) 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 35% at 50% 95%, var(--m8-sphere-warm) 0%, transparent 70%)',
+              mixBlendMode: 'screen',
+              opacity: 0.6,
+            }}
+          />
+          <div
+            className="absolute inset-0 rounded-full"
+            style={{
+              boxShadow:
+                'inset 0 0 30px rgba(0,0,0,0.85), inset -12px -22px 40px rgba(0,0,0,0.55), inset 6px 8px 18px rgba(255,255,255,0.04)',
+            }}
+          />
+          <div
+            className="absolute rounded-full"
+            style={{
+              top: '6%',
+              left: '12%',
+              width: '55%',
+              height: '45%',
+              background:
+                'radial-gradient(circle at 30% 30%, var(--m8-sphere-hi) 0%, transparent 65%)',
+              opacity: 0.55,
+              filter: 'blur(4px)',
+              mixBlendMode: 'screen',
+            }}
+          />
+          <div
+            className="absolute rounded-full"
+            style={{
+              top: '12%',
+              left: '22%',
+              width: '14%',
+              height: '10%',
+              background:
+                'radial-gradient(circle at 50% 50%, var(--m8-sphere-spec) 0%, rgba(255,255,255,0.4) 40%, transparent 70%)',
+              filter: 'blur(2px)',
+              opacity: 0.85,
+            }}
+          />
+          <div
+            className="absolute rounded-full"
+            style={{
+              top: '22%',
+              left: '38%',
+              width: '4%',
+              height: '3%',
+              background: 'rgba(255,255,255,0.55)',
+              filter: 'blur(0.5px)',
+            }}
+          />
 
-        <div className="absolute inset-x-0 bottom-[14%] flex justify-center">
-          <AnswerTriangle />
+          <div
+            className="absolute left-1/2 flex -translate-x-1/2 items-center justify-center rounded-full"
+            style={{
+              top: '18%',
+              width: '42%',
+              aspectRatio: '1',
+              background:
+                'radial-gradient(circle at 50% 30%, var(--m8-stripe) 0%, var(--m8-stripe) 70%, var(--m8-stripe-shadow) 100%)',
+              boxShadow:
+                'inset 0 -3px 8px rgba(0,0,0,0.18), inset 0 2px 6px rgba(255,255,255,0.6), 0 1px 0 rgba(0,0,0,0.4)',
+              opacity: hideEight ? 0 : 1,
+              transition: 'opacity var(--m8-dur-text-fade) ease',
+            }}
+            aria-hidden={hideEight}
+          >
+            <span
+              className="font-(--m8-font-numeral) leading-[0.95] text-(--m8-eight)"
+              style={{
+                fontWeight: 900,
+                fontSize: 'var(--m8-text-eight)',
+                letterSpacing: '-0.02em',
+                textShadow: '0 1px 0 rgba(255,255,255,0.4)',
+              }}
+              aria-hidden
+            >
+              8
+            </span>
+          </div>
+
+          <div
+            className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+            style={{
+              bottom: '12%',
+              width: '38%',
+              aspectRatio: '1 / 0.866',
+            }}
+          >
+            <AnswerTriangle />
+          </div>
         </div>
-      </div>
-    </motion.button>
+      </motion.button>
+
+      <div
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2"
+        style={{
+          bottom: '-16px',
+          width: '75%',
+          height: '22px',
+          background:
+            'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,0.55) 0%, transparent 70%)',
+          filter: 'blur(8px)',
+        }}
+        aria-hidden
+      />
+    </div>
   );
 }

@@ -1,5 +1,7 @@
 # Agent Prompt — PHASE-7 Design Implementation
 
+> **Note:** Design V2 was implemented via the Claude Design pack and sub-phases **D1–D8**. Use [`docs/COORDINATOR-DESIGN-V2-INTEGRATION.md`](../COORDINATOR-DESIGN-V2-INTEGRATION.md) and `magik-8_CLAUDE_DESIGN/prompts/` as the canonical runbook (this file is the original single-pass prompt).
+
 **Role:** Implementer (visual only)  
 **Prerequisite:** Overseer approved **`docs/DESIGN-V2.md`** from Design Agent chat  
 **Read:** `docs/DESIGN-V2.md`, `docs/HANDOFF.md`, `docs/DESIGN.md` (diff only)

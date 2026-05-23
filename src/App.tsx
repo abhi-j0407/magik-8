@@ -1,17 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MagikBall } from './components/MagikBall';
+import { HUDStrip } from './components/HUDStrip';
 import { MuteToggle } from './components/MuteToggle';
 import { OracleAudioBridge } from './components/OracleAudioBridge';
 import { ShakeCTA } from './components/ShakeCTA';
 import { ShakeSensorsProvider, useShakeSensorStatus } from './components/ShakeSensors';
 import { ShareSheet } from './components/ShareSheet';
 import { ThemeChips } from './components/ThemeChips';
+import { Wordmark } from './components/Wordmark';
 import { AudioProvider } from './context/AudioContext';
 import { OracleProvider, useOracle } from './context/OracleContext';
 
 function OracleScreen() {
   const { phase, shakeOrTap } = useOracle();
   const { motionDenied } = useShakeSensorStatus();
+  const prevPhase = useRef(phase);
+
+  const [shakeCount, setShakeCount] = useState(() => {
+    return parseInt(localStorage.getItem('m8_sesh') || '0', 10) || 0;
+  });
+
+  useEffect(() => {
+    if (prevPhase.current !== 'answered' && phase === 'answered') {
+      setShakeCount((c) => {
+        const next = c + 1;
+        localStorage.setItem('m8_sesh', String(next));
+        return next;
+      });
+    }
+    prevPhase.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -30,33 +48,43 @@ function OracleScreen() {
   const instruction =
     phase === 'idle'
       ? motionDenied
-        ? 'Hold your question in mind, then tap.'
-        : 'Hold your question in mind, then shake or tap.'
+        ? 'hold your question · then tap'
+        : 'hold your question · shake or tap'
       : phase === 'answered'
-        ? 'Ask again when ready.'
+        ? 'ask again when ready'
         : null;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center gap-6 bg-(--magik-bg) px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] font-(--font-ui) text-(--magik-answer-text)">
-      <header className="relative w-full text-center">
-        <div className="absolute top-0 right-0">
-          <MuteToggle />
-        </div>
-        <h1 className="font-(--font-answer) text-3xl tracking-widest uppercase">Magik 8</h1>
-        {instruction && (
-          <p className="mt-2 text-sm text-(--magik-muted)" id="oracle-instruction">
-            {instruction}
-          </p>
-        )}
+    <main className="relative isolate mx-auto flex min-h-dvh max-w-lg flex-col items-center gap-4 overflow-hidden bg-(--m8-bg) px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] font-(--m8-font-ui) text-(--m8-chrome) m8-grain m8-vignette">
+      <h1 className="sr-only">Magik 8</h1>
+
+      <header className="relative z-10 flex w-full items-center justify-between gap-2">
+        <Wordmark size={22} />
+        <MuteToggle />
       </header>
 
-      <section className="flex w-full flex-1 flex-col items-center justify-center" aria-labelledby="oracle-instruction">
+      <HUDStrip shakeCount={shakeCount} />
+
+      <section
+        className="z-[1] flex w-full flex-1 flex-col items-center justify-center"
+        aria-labelledby="oracle-instruction"
+      >
         <MagikBall />
       </section>
 
+      {instruction && (
+        <p
+          id="oracle-instruction"
+          className="z-[2] m-0 text-center text-(--m8-chrome-dim)"
+          style={{ fontSize: 13, letterSpacing: '0.02em' }}
+        >
+          {instruction}
+        </p>
+      )}
+
       <ThemeChips />
-      <ShareSheet />
       <ShakeCTA />
+      <ShareSheet />
     </main>
   );
 }

@@ -43,12 +43,20 @@ function ThemeChip({
       aria-selected={selected}
       disabled={disabled}
       onClick={onSelect}
-      className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light) disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 py-2 font-(--m8-font-ui) text-[11px] font-bold lowercase tracking-[0.02em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--m8-amber) disabled:cursor-not-allowed disabled:opacity-45 ${
         selected
-          ? 'border-(--magik-fluid-light) bg-(--magik-fluid) text-(--magik-answer-text)'
-          : 'border-(--magik-sphere-highlight) bg-(--magik-sphere) text-(--magik-muted) hover:text-(--magik-answer-text)'
+          ? 'border-(--m8-amber-dim) bg-[rgba(180,130,30,0.06)] text-(--m8-stripe)'
+          : 'border-(--m8-rule) text-(--m8-chrome-dim) hover:border-(--m8-rule-hi) hover:text-(--m8-chrome)'
       }`}
     >
+      <span
+        aria-hidden
+        className="h-1.5 w-1.5 rounded-full"
+        style={{
+          background: selected ? 'var(--m8-amber)' : 'var(--m8-rule)',
+          boxShadow: selected ? '0 0 6px var(--m8-amber)' : undefined,
+        }}
+      />
       {pack.label}
     </button>
   );

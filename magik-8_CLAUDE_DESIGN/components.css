@@ -1,0 +1,751 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   MAGIK 8 — COMPONENT STYLES
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ════════════════════════════════════════════════════════════════════════
+   SPHERE
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-ball-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.m8-ball {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 50%;
+  outline: none;
+  /* drop shadow under the ball */
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.55))
+          drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+}
+.m8-ball:focus-visible {
+  outline: 2px solid var(--m8-fluid-hi);
+  outline-offset: 6px;
+}
+
+/* ── CSS-property registrations for animatable percentage variables ─── */
+@property --m8-spec-x { syntax: "<percentage>"; inherits: true; initial-value: 22%; }
+@property --m8-spec-y { syntax: "<percentage>"; inherits: true; initial-value: 14%; }
+@property --m8-spec-mini-x { syntax: "<percentage>"; inherits: true; initial-value: 38%; }
+@property --m8-spec-mini-y { syntax: "<percentage>"; inherits: true; initial-value: 22%; }
+
+/* idle float — gentle vertical bob */
+@keyframes m8-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-7px) rotate(-0.4deg); }
+}
+.m8-ball-idle {
+  animation: m8-float var(--m8-dur-idle) ease-in-out infinite;
+}
+
+/* shake wobble — v3: rotation + translation + slight skew for inertia */
+@keyframes m8-shake-v3 {
+  0%   { transform: translate(0,0)      rotate(0deg); }
+  10%  { transform: translate(-4px,-2px) rotate(-9deg); }
+  24%  { transform: translate(3px,-3px)  rotate(8deg)  skewX(1deg); }
+  38%  { transform: translate(-3px,1px)  rotate(-7deg) skewX(-0.5deg); }
+  52%  { transform: translate(3px,-1px)  rotate(6deg); }
+  68%  { transform: translate(-2px,0)    rotate(-4deg); }
+  82%  { transform: translate(1px,0)     rotate(2deg); }
+  100% { transform: translate(0,0)       rotate(0deg); }
+}
+.m8-ball-shaking {
+  animation: m8-shake-v3 var(--m8-dur-shake) cubic-bezier(.22,.6,.35,1);
+}
+
+.m8-sphere {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.m8-sphere-3d {
+  background: transparent;
+  opacity: 0;
+  transition: opacity 250ms ease-out;
+}
+.m8-sphere-3d.is-ready { opacity: 1; }
+
+/* ─── CSS PRO SPHERE ─── */
+.m8-sphere-pro .m8-sphere-base {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 33% 28%,
+      oklch(22% 0.010 268) 0%,
+      oklch(14% 0.006 270) 32%,
+      oklch(7%  0.004 270) 68%,
+      oklch(3%  0     0)   100%);
+}
+
+/* warm bottom bounce (ground / amber rim hint) */
+.m8-sphere-pro .m8-sphere-bounce {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 65% 38% at 50% 96%,
+      oklch(34% 0.030 60) 0%,
+      transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+/* dark-side gradient — defines lower-right shadow on the sphere */
+.m8-sphere-pro .m8-sphere-shadow-side {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 78% 80%, rgba(0,0,0,0.55) 0%, transparent 55%),
+    radial-gradient(circle at 90% 50%, rgba(0,0,0,0.35) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* rim darkening — vignette into the edge */
+.m8-sphere-pro .m8-sphere-rim {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 32px rgba(0,0,0,0.85),
+    inset -14px -24px 44px rgba(0,0,0,0.55),
+    inset 8px 10px 22px rgba(255,255,255,0.05);
+}
+
+/* fresnel rim light — defines the silhouette against a near-black stage */
+.m8-sphere-pro .m8-sphere-fresnel {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%,
+      transparent 67%,
+      oklch(42% 0.020 245 / 0.55) 86%,
+      oklch(8%  0.004 270 / 0)    100%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* primary diffuse highlight — soft upper-left */
+.m8-sphere-pro .m8-sphere-diffuse {
+  position: absolute;
+  top: 4%; left: 10%;
+  width: 58%; height: 48%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+    oklch(42% 0.012 268) 0%,
+    transparent 62%);
+  opacity: 0.65;
+  filter: blur(6px);
+  mix-blend-mode: screen;
+}
+
+/* hard specular hotspot — animated position via --m8-spec-x/y */
+.m8-sphere-pro .m8-sphere-spec {
+  position: absolute;
+  top: var(--m8-spec-y);
+  left: var(--m8-spec-x);
+  width: 18%; height: 13%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%,
+    oklch(99% 0.012 90) 0%,
+    oklch(94% 0.020 95 / 0.55) 40%,
+    transparent 68%);
+  filter: blur(2px);
+  opacity: 0.92;
+}
+
+/* secondary tiny specular — also drifts */
+.m8-sphere-pro .m8-sphere-spec-mini {
+  position: absolute;
+  top: var(--m8-spec-mini-y);
+  left: var(--m8-spec-mini-x);
+  width: 4.5%; height: 3.2%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  filter: blur(0.6px);
+  opacity: 0.8;
+}
+
+/* idle: drift the spec subtly to suggest a real sphere catching light */
+@keyframes m8-spec-drift {
+  0%, 100% { --m8-spec-x: 22%; --m8-spec-y: 14%; --m8-spec-mini-x: 38%; --m8-spec-mini-y: 22%; }
+  50%      { --m8-spec-x: 27%; --m8-spec-y: 16%; --m8-spec-mini-x: 42%; --m8-spec-mini-y: 24%; }
+}
+.m8-sphere-pro.m8-sphere-idle {
+  animation: m8-spec-drift 7s ease-in-out infinite;
+}
+
+/* shaking: snap the spec around hard */
+@keyframes m8-spec-jitter {
+  0%   { --m8-spec-x: 22%; --m8-spec-y: 14%; }
+  20%  { --m8-spec-x: 34%; --m8-spec-y: 22%; }
+  40%  { --m8-spec-x: 18%; --m8-spec-y: 30%; }
+  60%  { --m8-spec-x: 30%; --m8-spec-y: 12%; }
+  80%  { --m8-spec-x: 14%; --m8-spec-y: 18%; }
+  100% { --m8-spec-x: 22%; --m8-spec-y: 14%; }
+}
+.m8-sphere-pro.m8-sphere-shaking {
+  animation: m8-spec-jitter var(--m8-dur-shake) cubic-bezier(.22,.6,.35,1);
+}
+
+/* contact shadow */
+.m8-ball-contact {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 75%; height: 22px;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%,
+    rgba(0,0,0,0.55) 0%,
+    transparent 70%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WHITE "8" FIELD
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-eight-field {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%) scale(1);
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 28%,
+      var(--m8-stripe) 0%,
+      var(--m8-stripe) 65%,
+      var(--m8-stripe-shadow) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 -4px 10px rgba(0,0,0,0.22),
+    inset 0 3px 8px rgba(255,255,255,0.65),
+    0 1px 0 rgba(0,0,0,0.4),
+    0 0 0 1px rgba(0,0,0,0.18);
+  opacity: 1;
+  transition: opacity 320ms ease-out, transform 320ms cubic-bezier(.22,1,.36,1);
+  z-index: 2;
+}
+.m8-eight-field[data-visible="false"] {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.92);
+}
+.m8-eight-numeral {
+  font-family: var(--m8-font-numeral);
+  font-weight: 900;
+  font-size: var(--m8-text-eight);
+  color: var(--m8-eight);
+  line-height: 0.95;
+  /* slight letter compress + faint emboss */
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  user-select: none;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   TRIANGLE WINDOW
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-triangle-slot {
+  position: absolute;
+  left: 50%;
+  bottom: 11%;
+  transform: translateX(-50%);
+  width: var(--m8-triangle-w, 48%);
+  aspect-ratio: 1 / 0.866;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.m8-triangle {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(0.94);
+  transform-origin: 50% 80%;
+  transition: opacity 280ms ease-out, transform 320ms cubic-bezier(.22,1,.36,1);
+}
+.m8-triangle.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.m8-triangle-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* faint inner shadow on the cavity */
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.04))
+          drop-shadow(0 -1px 0 rgba(0,0,0,0.7));
+}
+
+/* INK RECT — scales up from the bottom with a settle overshoot */
+.m8-ink-rect {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.001);
+}
+.m8-triangle.is-active .m8-ink-rect {
+  animation:
+    m8-ink-rise   var(--m8-dur-reveal) cubic-bezier(.16,.85,.32,1) forwards,
+    m8-ink-settle 700ms cubic-bezier(.3,1.4,.5,1) var(--m8-dur-reveal) forwards;
+}
+@keyframes m8-ink-rise {
+  0%   { transform: scaleY(0.001); }
+  85%  { transform: scaleY(1.08); }
+  100% { transform: scaleY(1.05); }
+}
+@keyframes m8-ink-settle {
+  0%   { transform: scaleY(1.05); }
+  35%  { transform: scaleY(0.97); }
+  65%  { transform: scaleY(1.02); }
+  100% { transform: scaleY(1.00); }
+}
+
+/* MENISCUS — fades in after the rise, then drifts gently */
+.m8-ink-meniscus {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+.m8-triangle.is-active .m8-ink-meniscus {
+  animation:
+    m8-meniscus-show 380ms ease-out var(--m8-dur-reveal) forwards,
+    m8-meniscus-drift 5s ease-in-out var(--m8-dur-reveal) infinite;
+}
+@keyframes m8-meniscus-show {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 0.75; transform: translateY(0); }
+}
+@keyframes m8-meniscus-drift {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50%      { transform: translateX(1.2px) scaleY(1.08); }
+}
+
+/* ANSWER WRAP — inset box that fits the inscribed area of the triangle */
+.m8-answer-wrap {
+  position: absolute;
+  inset: 36% 14% 14% 14%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 280ms ease-out 380ms,
+    transform 380ms cubic-bezier(.22,1,.36,1) 380ms;
+}
+.m8-answer-wrap[data-show="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.m8-answer-text {
+  text-align: center;
+  font-family: var(--m8-font-answer);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  line-height: 1.02;
+  text-wrap: balance;
+  hyphens: auto;
+  user-select: text;
+  /* font-size set inline by useFitText */
+  font-size: 18px;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WORDMARK
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-wordmark-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.m8-wordmark-tag {
+  font-family: var(--m8-font-hud);
+  font-size: 11px;
+  color: var(--m8-chrome-mute);
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BUTTONS — Icon, CTA, Link
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-icon-btn {
+  width: 36px; height: 36px;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--m8-rule);
+  border-radius: 8px;
+  color: var(--m8-chrome-dim);
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background-color 120ms;
+}
+.m8-icon-btn:hover {
+  color: var(--m8-chrome);
+  border-color: var(--m8-rule-hi);
+  background: rgba(255,255,255,0.02);
+}
+.m8-icon-btn:focus-visible {
+  outline: 2px solid var(--m8-fluid-hi);
+  outline-offset: 2px;
+}
+
+/* primary CTA — ASCII corner brackets, no SaaS pill */
+.m8-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  min-height: 44px;
+  padding: 12px 28px;
+  background: linear-gradient(180deg,
+    oklch(20% 0.005 270) 0%,
+    oklch(14% 0.005 270) 100%);
+  color: var(--m8-chrome);
+  font-family: var(--m8-font-ui);
+  font-size: var(--m8-text-ui-lg);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  border: 1px solid var(--m8-rule);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    inset 0 -1px 0 rgba(0,0,0,0.5),
+    0 1px 0 rgba(0,0,0,0.6);
+  transition: border-color 120ms, color 120ms, transform 60ms;
+}
+.m8-cta:hover {
+  border-color: var(--m8-amber-dim);
+  color: var(--m8-stripe);
+}
+.m8-cta:active {
+  transform: translateY(1px);
+}
+.m8-cta:focus-visible {
+  outline: 2px solid var(--m8-amber);
+  outline-offset: 2px;
+}
+.m8-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.m8-cta-corner {
+  position: absolute;
+  font-family: var(--m8-font-hud);
+  font-size: 14px;
+  color: var(--m8-chrome-mute);
+  pointer-events: none;
+  line-height: 1;
+}
+.m8-cta-corner-tl { top: 2px;    left: 4px;  }
+.m8-cta-corner-tr { top: 2px;    right: 4px; }
+.m8-cta-corner-bl { bottom: 2px; left: 4px;  }
+.m8-cta-corner-br { bottom: 2px; right: 4px; }
+.m8-cta:hover .m8-cta-corner { color: var(--m8-amber); }
+
+.m8-cta-busy .m8-cta-label::after {
+  content: "";
+  display: inline-block;
+  width: 6px; margin-left: 6px;
+  animation: m8-dots 1.2s steps(4) infinite;
+}
+@keyframes m8-dots {
+  0%   { content: ""; }
+  25%  { content: "."; }
+  50%  { content: ".."; }
+  75%  { content: "..."; }
+  100% { content: ""; }
+}
+
+.m8-link-btn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--m8-chrome-dim);
+  font-family: var(--m8-font-ui);
+  font-size: var(--m8-text-ui);
+  padding: 12px 16px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--m8-rule);
+  text-underline-offset: 3px;
+}
+.m8-link-btn:hover { color: var(--m8-chrome); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   THEME CHIPS
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-chips {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0;
+}
+.m8-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 12px 6px 10px;
+  background: transparent;
+  color: var(--m8-chrome-dim);
+  font-family: var(--m8-font-ui);
+  font-size: var(--m8-text-ui-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  border: 1px solid var(--m8-rule);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background-color 120ms;
+}
+.m8-chip-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--m8-rule);
+  transition: background 120ms;
+}
+.m8-chip:hover {
+  color: var(--m8-chrome);
+  border-color: var(--m8-rule-hi);
+}
+.m8-chip-on {
+  color: var(--m8-stripe);
+  border-color: var(--m8-amber-dim);
+  background: rgba(180, 130, 30, 0.06);
+}
+.m8-chip-on .m8-chip-dot {
+  background: var(--m8-amber);
+  box-shadow: 0 0 6px var(--m8-amber);
+}
+.m8-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PERMISSION SHEET
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-sheet-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: m8-fade-in 200ms ease-out;
+}
+@keyframes m8-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.m8-sheet {
+  width: 100%;
+  max-width: 420px;
+  margin: 16px;
+  padding: 20px 20px max(20px, env(safe-area-inset-bottom));
+  background: var(--m8-bg-elev);
+  border: 1px solid var(--m8-rule);
+  border-radius: var(--m8-radius-sheet);
+  box-shadow:
+    0 -8px 32px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: m8-rise 280ms cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes m8-rise {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.m8-sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--m8-rule-hi);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.m8-sheet-title {
+  margin: 0 0 8px;
+  font-family: var(--m8-font-answer);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--m8-stripe);
+}
+.m8-sheet-body {
+  margin: 0 0 16px;
+  font-family: var(--m8-font-ui);
+  font-size: var(--m8-text-ui);
+  line-height: 1.5;
+  color: var(--m8-chrome-dim);
+}
+.m8-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   SHARE SHEET (inline button + status)
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-share-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 320px;
+}
+.m8-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 22px;
+  background: linear-gradient(180deg, var(--m8-fluid-mid) 0%, var(--m8-fluid-deep) 100%);
+  color: var(--m8-stripe);
+  font-family: var(--m8-font-ui);
+  font-size: var(--m8-text-ui);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  border: 1px solid var(--m8-fluid-hi);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+.m8-share-btn:hover { filter: brightness(1.1); }
+.m8-share-btn:disabled { opacity: 0.6; cursor: wait; }
+.m8-share-status {
+  margin: 0;
+  font-family: var(--m8-font-hud);
+  font-size: var(--m8-text-hud);
+  color: var(--m8-chrome-dim);
+  letter-spacing: 0.06em;
+}
+.m8-share-status-err { color: var(--m8-danger); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   SHARE CARD (1080×1920)
+   ════════════════════════════════════════════════════════════════════════ */
+
+.m8-share-card-wrap {
+  display: inline-block;
+}
+.m8-share-card {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
+  background:
+    radial-gradient(ellipse at 50% 30%, oklch(20% 0.04 268) 0%, oklch(11% 0.012 270) 70%),
+    var(--m8-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 110px 80px;
+  color: var(--m8-stripe);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  isolation: isolate;
+}
+.m8-share-card-grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  background-size: 200px 200px;
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 5;
+}
+.m8-sc-corner {
+  position: absolute;
+  font-family: var(--m8-font-hud);
+  font-size: 28px;
+  color: var(--m8-chrome-mute);
+  z-index: 4;
+}
+.m8-sc-corner-tl { top: 36px;    left: 44px;  }
+.m8-sc-corner-tr { top: 36px;    right: 44px; }
+.m8-sc-corner-bl { bottom: 36px; left: 44px;  }
+.m8-sc-corner-br { bottom: 36px; right: 44px; }
+
+.m8-sc-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+  z-index: 2;
+}
+.m8-sc-pack {
+  font-family: var(--m8-font-hud);
+  font-size: 22px;
+  color: var(--m8-chrome-mute);
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+}
+
+.m8-sc-ball-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.m8-sc-answer {
+  font-family: var(--m8-font-answer);
+  font-weight: 600;
+  font-size: 88px;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 90%;
+  margin: 30px auto 0;
+  text-wrap: balance;
+  text-shadow: 0 0 20px var(--m8-answer-glow);
+  z-index: 2;
+}
+
+.m8-sc-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--m8-font-hud);
+  font-size: 22px;
+  color: var(--m8-chrome-mute);
+  letter-spacing: 0.12em;
+  margin-top: 36px;
+  z-index: 2;
+}
+.m8-sc-footer-dot { color: var(--m8-amber); }

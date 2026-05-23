@@ -20,8 +20,8 @@ export default defineConfig({
         name: 'Magik 8',
         short_name: 'Magik 8',
         description: 'Ask a yes/no question, shake, reveal the oracle.',
-        theme_color: '#0a0a0c',
-        background_color: '#0a0a0c',
+        theme_color: '#1a1a20',
+        background_color: '#1a1a20',
         display: 'standalone',
         icons: [
           {

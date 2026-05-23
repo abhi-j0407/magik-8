@@ -11,10 +11,13 @@ All specs live in [`docs/`](./docs/). **Start:** [`docs/README.md`](./docs/READM
 | [WORKFLOW.md](./docs/WORKFLOW.md) | Multi-agent phases, context limits |
 | [HANDOFF.md](./docs/HANDOFF.md) | Current phase status |
 | [PRD.md](./docs/PRD.md) | Requirements (`REQ-*`) |
+| [DESIGN-V2.md](./docs/DESIGN-V2.md) | Visual spec (tokens, motion, components) |
 
 ## Status
 
-**PHASE-6 complete** — core ritual, sensors, polish, share/PWA, automated QA (Vitest + Playwright + Lighthouse script).
+**Design V2 complete (D1–D8)** — core ritual, sensors, polish, share/PWA, and Claude Design integration. Automated QA: Vitest (45) · Playwright (3) · Lighthouse mobile (perf 95, a11y 100). **Next:** overseer deploy (Vercel) — see [`docs/HANDOFF.md`](./docs/HANDOFF.md).
+
+Design reference pack (archived): [`magik-8_CLAUDE_DESIGN/`](./magik-8_CLAUDE_DESIGN/).
 
 ## Development
 
@@ -28,17 +31,20 @@ npm run test:e2e     # Playwright smoke (starts preview; first run: npx playwrig
 npm run test:lighthouse  # Mobile Lighthouse vs preview (requires local Chrome)
 ```
 
-Open the HTTPS URL on your phone (same Wi‑Fi) before testing device motion in later phases.
+Open the HTTPS URL on your phone (same Wi‑Fi) before testing device motion.
 
 ## Project layout
 
 ```
 src/
-  components/   # MagikBall, AnswerTriangle, …
-  hooks/        # useShake, useOracleMachine, …
-  lib/          # pickAnswer, rng, easterEgg
+  components/   # MagikBall, AnswerTriangle, Wordmark, HUDStrip, …
+  context/      # OracleContext, AudioContext
+  hooks/        # useShake, useOracleMachine, useAudio, …
+  lib/          # pickAnswer, rng, easterEgg, shareExport
   data/         # answers (from ANSWERS.md)
   types/        # oracle.ts
+docs/           # PRD, DESIGN-V2, HANDOFF, …
+magik-8_CLAUDE_DESIGN/  # design export (reference + exports)
 ```
 
 ## License

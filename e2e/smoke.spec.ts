@@ -1,29 +1,41 @@
 import { test, expect } from '@playwright/test';
 
-test('loads Magik 8 oracle app', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Magik 8' })).toBeVisible();
-  await expect(page.getByRole('tablist', { name: 'Answer theme' })).toBeVisible();
-});
-
-test('tap reveal shows oracle answer', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: /tap to shake/i }).click();
-  await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
-    timeout: 5000,
+/**
+ * Design V2 smoke — stable selectors use aria-labels where visible UI copy is lowercase
+ * (e.g. CTA shows "ask again" but exposes "Ask the oracle again").
+ */
+test.describe('Magik 8 oracle (Design V2)', () => {
+  test('loads chrome shell', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Magik 8' })).toBeVisible();
+    await expect(page.getByRole('tablist', { name: 'Answer theme' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /mute sound effects/i })).toBeVisible();
+    await expect(page.getByText('magik', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /tap to shake the magik 8/i }),
+    ).toBeVisible();
   });
-  const answer = page.locator('[aria-live="polite"]');
-  await expect(answer).toBeVisible();
-  await expect(answer).not.toHaveText('');
-});
 
-test('theme switch when answered', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('button', { name: /tap to shake/i }).click();
-  await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
-    timeout: 5000,
+  test('tap reveal shows oracle answer', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /tap to shake/i }).click();
+    await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
+      timeout: 5000,
+    });
+    const answer = page.locator('[aria-live="polite"]');
+    await expect(answer).toBeVisible();
+    await expect(answer).not.toHaveText('');
+    await expect(page.getByRole('button', { name: /share answer/i })).toBeVisible();
   });
-  const career = page.getByRole('tab', { name: 'Career Coach' });
-  await career.click();
-  await expect(career).toHaveAttribute('aria-selected', 'true');
+
+  test('theme switch when answered', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /tap to shake/i }).click();
+    await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
+      timeout: 5000,
+    });
+    const career = page.getByRole('tab', { name: 'Career Coach' });
+    await career.click();
+    await expect(career).toHaveAttribute('aria-selected', 'true');
+  });
 });

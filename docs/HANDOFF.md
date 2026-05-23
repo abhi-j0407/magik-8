@@ -13,16 +13,15 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — PHASE-6
+## Handoff — Design V2 complete (D8)
 **Status:** complete
-**Agent:** implementer (PHASE-6 QA)
-**Changed:** Playwright smoke (`e2e/smoke.spec.ts`, `playwright.config.ts`), Lighthouse script (`scripts/lighthouse.mjs`), vitest exclude e2e, `docs/BACKLOG.md`, package scripts `test:e2e` / `test:lighthouse`
-**Verified:** npm run build ✓ · npm test ✓ (45) · npm run test:e2e ✓ (3) · npm run test:lighthouse ✓
-**Lighthouse (mobile, preview http://127.0.0.1:4173):** performance 89 · accessibility 100 · best-practices 100 · PWA — not scored on HTTP preview (see BACKLOG B-04)
-**Acceptance:** automated QA gate; manual device matrix partial (see § QA results)
-**Deploy:** skipped — overseer connects GitHub → Vercel after PHASE-6
-**Next:** Design spec (`docs/prompts/DESIGN-AGENT-visual-spec.md`) → implement (`PHASE-7-design-implement.md`) → Ship
-**Blockers:** none
+**Agent:** implementer D8 (docs + ship prep)
+**Changed:** `docs/DESIGN-V2.md` (copied from design pack); `docs/DESIGN.md` superseded; `docs/prompts/PHASE-7-design-implement.md` coordinator pointer; HANDOFF checklist
+**Verified:** npm run build ✓ · npm test ✓ (45) · npm run test:e2e ✓ (3) · `rg '--magik-' src/` empty ✓
+**Integration:** D1–D8 complete — tokens, ball, triangle, chrome, share card, motion, e2e, docs
+**Polish:** README/docs sync · theme-color `#1a1a20` · touch targets ≥44px
+**Next:** Ship — overseer pushes `main`, connects Vercel, sets `deploy_url` below
+**Blockers:** none (device QA: iPhone audio, Android shake — overseer backlog)
 ```
 
 ## Phase checklist
@@ -35,14 +34,29 @@ deploy_url: null
 - [x] **PHASE-4** — Themes wiring, audio, easter eggs
 - [x] **PHASE-5** — Share card, manifest/icons, offline shell
 - [x] **PHASE-6** — QA matrix, Lighthouse, Playwright smoke
-- [ ] **Design V2** — Spec (`DESIGN-V2.md`) + implement (PHASE-7)
+- [x] **Design V2** — Claude Design pack (`magik-8_CLAUDE_DESIGN/`) integrated D1–D8; spec in [`DESIGN-V2.md`](./DESIGN-V2.md)
 - [ ] **Ship** — Overseer: GitHub push → Vercel connect → set `deploy_url` below
 
 ## Active locks
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| — | — | PHASE-6 complete |
+| _(none)_ | — | Design V2 complete; Ship is overseer-only |
+
+## Design V2 integration summary
+
+| Phase | Scope |
+|-------|--------|
+| D1 | Fonts, `--m8-*` tokens, grain/vignette |
+| D2 | `MagikBall` 5-layer sphere |
+| D3 | `AnswerTriangle` SVG ink rise |
+| D4 | Chrome + App shell (Wordmark, HUD, CTA, sheets) |
+| D5 | `ShareCard` 1080×1920 export |
+| D6 | Motion + `prefers-reduced-motion` |
+| D7 | E2E smoke alignment |
+| D8 | Docs + ship prep |
+
+Archive: `magik-8_CLAUDE_DESIGN/` (exports, prompts, prototype — do not delete).
 
 ## Sensor tuning (post FIX-3)
 
@@ -54,15 +68,15 @@ deploy_url: null
 | sustainedSamples | 3 |
 | strategy | hypot + EMA baseline jerk + sustained samples |
 
-## QA results (PHASE-6 fills in)
+## QA results (PHASE-6 + Design V2 D7)
 
 | Check | Pass | Notes |
 |-------|------|-------|
 | iPhone Safari shake | ✓ | FIX-3 verified prior; ritual lock intact |
 | iPhone audio mute/unlock | pending | overseer device pass (BACKLOG B-02) |
 | Android shake | pending | overseer device pass (BACKLOG B-03) |
-| Lighthouse mobile | ✓ | perf 89 · a11y 100 · best-practices 100 (`npm run test:lighthouse`) |
-| Playwright smoke | ✓ | load · tap reveal · theme switch (`npm run test:e2e`) |
+| Lighthouse mobile | ✓ | perf 95 · a11y 100 · best-practices 100 — post Design V2 D7 (`npm run test:lighthouse`) |
+| Playwright smoke | ✓ | chrome shell · tap reveal · share CTA · theme switch (`npm run test:e2e`) |
 
 ## Decisions log (frozen unless user changes)
 
@@ -73,13 +87,13 @@ deploy_url: null
 | Stack | Vite + React + TypeScript + Tailwind v4 |
 | Themes v1 | Classic, Career Coach, Party Mode |
 | Easter egg rate | 1/40 shakes + first-visit egg |
-| Deploy | **Overseer only** after PHASE-6 (GitHub + Vercel) |
+| Deploy | **Overseer only** — ready after Design V2 |
 
 ## Environment secrets
 
 None required for v1. No API keys.
 
-## Deploy (overseer — after PHASE-6)
+## Deploy (overseer — ready)
 
 | Field | Value |
 |-------|-------|

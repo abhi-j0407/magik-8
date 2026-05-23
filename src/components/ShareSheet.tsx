@@ -42,29 +42,38 @@ export function ShareSheet() {
         isEasterEgg={result.isEasterEgg}
       />
 
-      <div className="flex w-full max-w-md flex-col items-center gap-2">
+      <div className="m8-share-row">
         <button
           type="button"
           onClick={handleShare}
           disabled={busy}
-          className="min-h-11 w-full rounded-full border border-(--magik-fluid-light) bg-(--magik-fluid) px-6 py-3 text-sm font-semibold text-(--magik-answer-text) transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light) disabled:cursor-wait disabled:opacity-60"
+          className="m8-share-btn"
           aria-busy={busy}
         >
-          {busy ? 'Preparing image…' : 'Share answer'}
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path
+              d="M8 2v8M5 5l3-3 3 3M3 10v3a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-3"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {busy ? 'preparing…' : 'share answer'}
         </button>
         {status === 'shared' && (
-          <p className="text-xs text-(--magik-muted)" role="status">
-            Shared — check your share sheet.
+          <p className="m8-share-status" role="status">
+            shared — check your share sheet
           </p>
         )}
         {status === 'downloaded' && (
-          <p className="text-xs text-(--magik-muted)" role="status">
-            Image saved — use your gallery or files app.
+          <p className="m8-share-status" role="status">
+            image saved to downloads
           </p>
         )}
         {status === 'error' && (
-          <p className="text-xs text-red-400" role="alert">
-            Could not export. Try again.
+          <p className="m8-share-status m8-share-status-err" role="alert">
+            export failed — try again
           </p>
         )}
       </div>

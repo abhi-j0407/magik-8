@@ -12,11 +12,31 @@ export function MuteToggle() {
     <button
       type="button"
       onClick={handleClick}
-      className="min-h-11 min-w-11 rounded-full border border-(--magik-sphere-highlight) bg-(--magik-sphere) px-3 text-sm text-(--magik-muted) transition-colors hover:text-(--magik-answer-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light)"
+      className="m8-icon-btn"
       aria-pressed={muted}
       aria-label={muted ? 'Unmute sound effects' : 'Mute sound effects'}
     >
-      {muted ? '🔇' : '🔊'}
+      {muted ? (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+          <path d="M3 5.5h2.5L9 3v10L5.5 10.5H3v-5Z" fill="currentColor" />
+          <path
+            d="M11 6l3 3M14 6l-3 3"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+          <path d="M3 5.5h2.5L9 3v10L5.5 10.5H3v-5Z" fill="currentColor" />
+          <path
+            d="M11 5.5c1 .8 1 4.2 0 5M13 4c1.5 1.4 1.5 6.6 0 8"
+            stroke="currentColor"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+        </svg>
+      )}
     </button>
   );
 }

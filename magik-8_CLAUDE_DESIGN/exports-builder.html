@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1920,initial-scale=1" />
+  <title>magik 8 — export builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Oswald:wght@500;600;700&display=swap" />
+  <link rel="stylesheet" href="tokens.css" />
+  <link rel="stylesheet" href="components.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: oklch(8% 0.005 270); font-family: var(--m8-font-ui); color: var(--m8-chrome); }
+
+    .builder-page { display: none; }
+    .builder-page.active { display: block; }
+
+    /* ── share card stage ─────────────────────────────────────────── */
+    .stage-share-card {
+      width: 1080px; height: 1920px;
+      margin: 0 auto;
+    }
+
+    /* ── phone strip ───────────────────────────────────────────────── */
+    .stage-phone-strip {
+      width: 2120px;
+      padding: 60px 40px;
+      display: flex;
+      gap: 40px;
+      justify-content: center;
+      align-items: flex-start;
+      background:
+        radial-gradient(ellipse at center, oklch(15% 0.012 268) 0%, transparent 70%),
+        oklch(8% 0.005 270);
+      position: relative;
+    }
+    .stage-phone-strip::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+      background-size: 160px;
+      opacity: 0.07;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    .phone-card {
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .phone-card-label {
+      font-family: var(--m8-font-hud);
+      font-size: 16px;
+      letter-spacing: 0.18em;
+      text-transform: lowercase;
+      color: var(--m8-amber);
+    }
+    .phone-bezel {
+      width: 380px;
+      height: 822px;
+      background: oklch(13% 0.008 270);
+      border-radius: 44px;
+      padding: 18px;
+      box-shadow:
+        inset 0 0 0 2px oklch(4% 0 0),
+        inset 0 0 0 4px oklch(20% 0.005 270),
+        0 30px 60px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+    .phone-screen {
+      width: 100%; height: 100%;
+      background: var(--m8-bg);
+      border-radius: 30px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 50px 22px 30px;
+    }
+    .phone-screen::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+      background-size: 160px;
+      opacity: 0.06;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      z-index: 50;
+    }
+    .phone-screen::after {
+      content: "";
+      position: absolute; inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center,
+        transparent 30%,
+        oklch(8% 0.005 270 / 0.45) 80%,
+        oklch(4% 0.005 270 / 0.75) 100%);
+      z-index: 40;
+    }
+    .phone-island {
+      position: absolute;
+      top: 22px;
+      left: 50%; transform: translateX(-50%);
+      width: 120px; height: 34px;
+      border-radius: 17px;
+      background: #000;
+      z-index: 60;
+    }
+    .phone-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 2;
+    }
+    .phone-hud {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+      font-family: var(--m8-font-hud);
+      font-size: 14px;
+      color: var(--m8-chrome-dim);
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      z-index: 2;
+    }
+    .phone-hud-num { color: var(--m8-chrome); }
+    .phone-hud-sep { color: var(--m8-rule-hi); }
+    .phone-hud-status {
+      margin-left: auto;
+      padding: 2px 8px;
+      border: 1px solid var(--m8-rule);
+      border-radius: 2px;
+      font-size: 13px;
+    }
+    .phone-hud-status.idle      { color: var(--m8-chrome-dim); }
+    .phone-hud-status.shaking   { color: var(--m8-amber); border-color: var(--m8-amber-dim); }
+    .phone-hud-status.revealing { color: var(--m8-fluid-hi); border-color: var(--m8-fluid-mid); }
+    .phone-hud-status.answered  { color: var(--m8-fluid-meniscus); border-color: var(--m8-fluid-hi); }
+    .phone-ball-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 0;
+      z-index: 1;
+    }
+    .phone-instruction {
+      margin: 0 0 4px;
+      font-family: var(--m8-font-ui);
+      font-size: 13px;
+      color: var(--m8-chrome-dim);
+      letter-spacing: 0.02em;
+      text-align: center;
+      z-index: 2;
+    }
+    .phone-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      z-index: 2;
+    }
+    .phone-home {
+      position: absolute;
+      bottom: 8px;
+      left: 50%; transform: translateX(-50%);
+      width: 134px; height: 5px;
+      background: rgba(255,255,255,0.7);
+      border-radius: 3px;
+      z-index: 60;
+    }
+
+    /* ── ball solo ─────────────────────────────────────────────────── */
+    .stage-ball-solo {
+      width: 1200px; height: 1200px;
+      background: oklch(11% 0.008 270);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .stage-ball-solo::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+      background-size: 160px;
+      opacity: 0.07;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    .stage-ball-solo::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center,
+        transparent 30%,
+        oklch(6% 0.005 270 / 0.4) 80%,
+        oklch(4% 0.005 270 / 0.8) 100%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="share-card-root" class="builder-page"></div>
+  <div id="phone-strip-root" class="builder-page"></div>
+  <div id="ball-solo-root" class="builder-page"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="magik8-ball.jsx"></script>
+  <script type="text/babel" src="magik8-chrome.jsx"></script>
+
+  <script type="text/babel">
+    /* SHARE CARD — 1080 × 1920 */
+    function ShareCardStage() {
+      return (
+        <div className="stage-share-card">
+          <ShareCard answer="signs point to yes" themeLabel="classic" />
+        </div>
+      );
+    }
+
+    /* PHONE STRIP — 4 states side by side */
+    function PhoneCard({ phase, label, answer, themePack, instruction, count }) {
+      const status = phase === 'idle' ? 'ready' : phase === 'shaking' ? 'agitating' : phase === 'revealing' ? 'revealing' : 'settled';
+      return (
+        <div className="phone-card">
+          <div className="phone-card-label">{label}</div>
+          <div className="phone-bezel">
+            <div className="phone-island" />
+            <div className="phone-home" />
+            <div className="phone-screen">
+              <header className="phone-head">
+                <Wordmark size={22} />
+                <MuteToggle />
+              </header>
+              <div className="phone-hud">
+                <span>sesh</span>
+                <span className="phone-hud-num">{String(count).padStart(3,'0')}</span>
+                <span className="phone-hud-sep">/</span>
+                <span className="phone-hud-num">{themePack}</span>
+                <span className={`phone-hud-status ${phase}`}>{status}</span>
+              </div>
+              <div className="phone-ball-stage">
+                <MagikBall phase={phase} answer={answer} size={300} />
+              </div>
+              <p className="phone-instruction">{instruction}</p>
+              <div className="phone-footer">
+                <ThemeChips selected={themePack} />
+                <ShakeCTA phase={phase} />
+                {phase === 'answered' && <ShareSheet visible status="idle" />}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function PhoneStripStage() {
+      return (
+        <div className="stage-phone-strip">
+          <PhoneCard
+            phase="idle" label="phase 01 · idle"
+            answer="" themePack="classic" count={0}
+            instruction="hold your question · shake or tap"
+          />
+          <PhoneCard
+            phase="shaking" label="phase 02 · shaking"
+            answer="" themePack="classic" count={1}
+            instruction="hold your question · shake or tap"
+          />
+          <PhoneCard
+            phase="revealing" label="phase 03 · revealing"
+            answer="" themePack="classic" count={1}
+            instruction=""
+          />
+          <PhoneCard
+            phase="answered" label="phase 04 · answered"
+            answer="signs point to yes" themePack="classic" count={1}
+            instruction="ask again when ready"
+          />
+        </div>
+      );
+    }
+
+    /* BALL SOLO — 900px ball on dark stage */
+    function BallSolo() {
+      return (
+        <div className="stage-ball-solo">
+          <MagikBall phase="answered" answer="signs point to yes" size={900} />
+        </div>
+      );
+    }
+
+    // Render based on URL hash
+    const route = location.hash.replace('#','') || 'share';
+    const map = { share: ['#share-card-root', <ShareCardStage/>], phone: ['#phone-strip-root', <PhoneStripStage/>], ball: ['#ball-solo-root', <BallSolo/>] };
+    const [sel, el] = map[route] || map.share;
+    document.querySelector(sel).classList.add('active');
+    ReactDOM.createRoot(document.querySelector(sel)).render(el);
+  </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, type CSSProperties } from 'react';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from '../lib/shareExport';
 
 export type ShareCardProps = {
@@ -12,6 +12,24 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   { answerText, themeLabel, isEasterEgg = false },
   ref,
 ) {
+  const answerStyle: CSSProperties = {
+    margin: '20px auto 0',
+    maxWidth: '90%',
+    fontFamily: 'var(--m8-font-answer)',
+    fontWeight: 600,
+    fontSize: 96,
+    lineHeight: 1.02,
+    letterSpacing: '0.01em',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+    color: isEasterEgg ? 'var(--m8-amber)' : 'var(--m8-answer-ink)',
+    textShadow: isEasterEgg
+      ? '0 0 30px oklch(78% 0.135 78 / 0.45)'
+      : '0 0 20px var(--m8-answer-glow)',
+    textWrap: 'balance',
+    zIndex: 2,
+  };
+
   return (
     <div
       ref={ref}
@@ -20,87 +38,243 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
       aria-hidden
     >
       <div
-        className="flex h-full w-full flex-col items-center justify-between px-16 py-20 text-(--magik-answer-text)"
+        className="relative flex h-full w-full flex-col items-center text-(--m8-stripe)"
         style={{
           width: SHARE_CARD_WIDTH,
           height: SHARE_CARD_HEIGHT,
-          background: 'linear-gradient(165deg, var(--magik-fluid-light) 0%, var(--magik-fluid) 45%, #061f35 100%)',
-          fontFamily: 'var(--font-ui)',
+          padding: '110px 80px',
+          background:
+            'radial-gradient(ellipse at 50% 30%, oklch(20% 0.04 268) 0%, oklch(11% 0.012 270) 70%), var(--m8-bg)',
+          fontFamily: 'var(--m8-font-ui)',
+          isolation: 'isolate',
+          overflow: 'hidden',
         }}
       >
-        <p
-          className="text-center tracking-[0.35em] uppercase"
+        <div
           style={{
-            fontFamily: 'var(--font-answer)',
-            fontSize: 72,
-            margin: 0,
+            position: 'absolute',
+            inset: 0,
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>\")",
+            backgroundSize: '200px',
+            opacity: 0.08,
+            mixBlendMode: 'overlay',
+            pointerEvents: 'none',
+            zIndex: 5,
           }}
-        >
-          Magik 8
-        </p>
+        />
 
-        <div className="flex flex-1 flex-col items-center justify-center gap-12">
-          <div
-            className="relative shrink-0 rounded-full shadow-[inset_-24px_-48px_80px_rgba(0,0,0,0.55)]"
+        {(['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+          <span
+            key={c}
+            aria-hidden
             style={{
-              width: 520,
-              height: 520,
-              background:
-                'radial-gradient(circle at 32% 28%, var(--magik-sphere-highlight) 0%, var(--magik-sphere) 55%, #050505 100%)',
+              position: 'absolute',
+              fontFamily: 'var(--m8-font-hud)',
+              fontSize: 28,
+              color: 'var(--m8-chrome-mute)',
+              top: c.startsWith('t') ? 36 : 'auto',
+              bottom: c.startsWith('b') ? 36 : 'auto',
+              left: c.endsWith('l') ? 44 : 'auto',
+              right: c.endsWith('r') ? 44 : 'auto',
+              zIndex: 4,
             }}
           >
-            <div
-              className="absolute left-1/2 top-[18%] flex h-[42%] w-[42%] -translate-x-1/2 items-center justify-center rounded-full bg-(--magik-stripe)"
-              style={{ opacity: 0.35 }}
-            >
-              <span
-                style={{
-                  fontFamily: 'var(--font-answer)',
-                  fontSize: 140,
-                  color: 'var(--magik-eight)',
-                  lineHeight: 1,
-                }}
-              >
-                8
-              </span>
-            </div>
-            <div
-              className="absolute left-1/2 bottom-[14%] flex w-[38%] -translate-x-1/2 items-center justify-center rounded-sm bg-(--magik-fluid)"
-              style={{ minHeight: 120, padding: '16px 20px' }}
-            >
-              <p
-                className="m-0 text-center uppercase leading-tight"
-                style={{
-                  fontFamily: 'var(--font-answer)',
-                  fontSize: 36,
-                  color: isEasterEgg ? 'var(--magik-accent)' : 'var(--magik-answer-text)',
-                }}
-              >
-                {answerText}
-              </p>
-            </div>
-          </div>
+            {c === 'tl' ? '┌' : c === 'tr' ? '┐' : c === 'bl' ? '└' : '┘'}
+          </span>
+        ))}
 
-          <p
-            className="m-0 max-w-[900px] text-center uppercase leading-tight"
+        <div className="flex flex-col items-center" style={{ gap: 12, marginBottom: 40, zIndex: 2 }}>
+          <span
+            className="inline-flex items-baseline"
             style={{
-              fontFamily: 'var(--font-answer)',
-              fontSize: isEasterEgg ? 88 : 80,
-              color: isEasterEgg ? 'var(--magik-accent)' : 'var(--magik-answer-text)',
+              fontFamily: 'var(--m8-font-wordmark)',
+              fontSize: 96,
+              lineHeight: 1,
               letterSpacing: '0.04em',
+              gap: '0.5em',
+              color: 'var(--m8-stripe)',
+              textShadow:
+                '0 1px 0 rgba(0,0,0,0.9), 0 -1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.5)',
+            }}
+          >
+            <span>magik</span>
+            <span
+              style={{
+                color: 'var(--m8-amber)',
+                fontSize: '1.25em',
+                textShadow:
+                  '0 1px 0 rgba(0,0,0,0.9), 0 0 24px oklch(78% 0.135 78 / 0.5), 0 0 4px oklch(78% 0.135 78 / 0.85)',
+              }}
+            >
+              8
+            </span>
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--m8-font-hud)',
+              fontSize: 28,
+              color: 'var(--m8-chrome-mute)',
+              letterSpacing: '0.18em',
+              textTransform: 'lowercase',
+            }}
+          >
+            pack · {themeLabel.toLowerCase()}
+          </span>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center" style={{ zIndex: 2, width: '100%' }}>
+          <BallCrop answerText={answerText} isEasterEgg={isEasterEgg} />
+        </div>
+
+        <p style={answerStyle}>{answerText}</p>
+
+        <div
+          className="flex items-center"
+          style={{
+            gap: 16,
+            marginTop: 36,
+            fontFamily: 'var(--m8-font-hud)',
+            fontSize: 24,
+            color: 'var(--m8-chrome-mute)',
+            letterSpacing: '0.12em',
+            textTransform: 'lowercase',
+            zIndex: 2,
+          }}
+        >
+          <span>m8://oracle</span>
+          <span style={{ color: 'var(--m8-amber)' }}>●</span>
+          <span>shake.respond.share</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/** Static cropped ball — duplicates layer stack from MagikBall at fixed size 620. */
+function BallCrop({
+  answerText,
+  isEasterEgg,
+}: {
+  answerText: string;
+  isEasterEgg: boolean;
+}) {
+  const SIZE = 620;
+  return (
+    <div style={{ width: SIZE, height: SIZE, position: 'relative' }}>
+      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden' }}>
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle at 35% 30%, var(--m8-sphere-mid) 0%, var(--m8-sphere-core) 45%, var(--m8-sphere-rim) 100%)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background:
+              'radial-gradient(ellipse 60% 35% at 50% 95%, var(--m8-sphere-warm) 0%, transparent 70%)',
+            mixBlendMode: 'screen',
+            opacity: 0.6,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            boxShadow:
+              'inset 0 0 50px rgba(0,0,0,0.85), inset -20px -36px 60px rgba(0,0,0,0.55)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '6%',
+            left: '12%',
+            width: '55%',
+            height: '45%',
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle at 30% 30%, var(--m8-sphere-hi) 0%, transparent 65%)',
+            opacity: 0.55,
+            filter: 'blur(10px)',
+            mixBlendMode: 'screen',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '12%',
+            left: '22%',
+            width: '14%',
+            height: '10%',
+            borderRadius: '50%',
+            background:
+              'radial-gradient(circle at 50% 50%, var(--m8-sphere-spec) 0%, rgba(255,255,255,0.4) 40%, transparent 70%)',
+            filter: 'blur(3px)',
+            opacity: 0.85,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: '12%',
+            transform: 'translateX(-50%)',
+            width: '38%',
+            aspectRatio: '1 / 0.866',
+          }}
+        >
+          <svg viewBox="0 0 100 87" style={{ width: '100%', height: '100%' }} aria-hidden>
+            <defs>
+              <linearGradient id="m8-sc-ink" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stopColor="var(--m8-fluid-hi)" />
+                <stop offset="22%" stopColor="var(--m8-fluid-mid)" />
+                <stop offset="100%" stopColor="var(--m8-fluid-deep)" />
+              </linearGradient>
+              <radialGradient id="m8-sc-recess" cx="50%" cy="25%" r="85%">
+                <stop offset="0%" stopColor="rgba(0,0,0,0)" />
+                <stop offset="65%" stopColor="rgba(0,0,0,0.25)" />
+                <stop offset="100%" stopColor="rgba(0,0,0,0.7)" />
+              </radialGradient>
+              <linearGradient id="m8-sc-bezel" x1="50%" y1="0%" x2="50%" y2="100%">
+                <stop offset="0%" stopColor="oklch(20% 0.005 270)" />
+                <stop offset="100%" stopColor="oklch(2% 0 0)" />
+              </linearGradient>
+            </defs>
+            <polygon points="50,1 99,86 1,86" fill="url(#m8-sc-bezel)" />
+            <polygon points="50,4 96,83 4,83" fill="url(#m8-sc-ink)" />
+            <polygon points="50,4 96,83 4,83" fill="url(#m8-sc-recess)" opacity="0.55" />
+          </svg>
+          <p
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '58%',
+              transform: 'translate(-50%, -50%)',
+              margin: 0,
+              width: '88%',
+              fontFamily: 'var(--m8-font-answer)',
+              fontWeight: 600,
+              fontSize: 11,
+              lineHeight: 1.05,
+              letterSpacing: '0.02em',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+              color: isEasterEgg ? 'var(--m8-amber)' : 'var(--m8-answer-ink)',
+              pointerEvents: 'none',
             }}
           >
             {answerText}
           </p>
         </div>
-
-        <p
-          className="m-0 text-center uppercase tracking-widest"
-          style={{ fontSize: 36, color: 'var(--magik-muted)' }}
-        >
-          {themeLabel}
-        </p>
       </div>
     </div>
   );
-});
+}

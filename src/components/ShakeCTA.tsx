@@ -21,12 +21,12 @@ export function ShakeCTA() {
   };
 
   const label = busy
-    ? 'Consulting the oracle…'
+    ? 'consulting…'
     : answered
-      ? 'Ask again'
+      ? 'ask again'
       : needsPermissionPrompt
-        ? 'Enable shake'
-        : 'Tap to shake';
+        ? 'enable shake'
+        : 'tap to shake';
 
   const ariaLabel = busy
     ? 'Oracle is thinking'
@@ -43,10 +43,22 @@ export function ShakeCTA() {
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="min-h-11 min-w-[11rem] rounded-full border border-(--magik-sphere-highlight) bg-(--magik-sphere) px-6 py-3 text-sm font-medium text-(--magik-answer-text) transition-colors hover:border-(--magik-fluid-light) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--magik-fluid-light) disabled:cursor-not-allowed disabled:opacity-50"
       aria-label={ariaLabel}
+      className={`m8-cta ${busy ? 'm8-cta-busy' : ''}`}
     >
-      {label}
+      <span className="m8-cta-corner m8-cta-corner-tl" aria-hidden>
+        ┌
+      </span>
+      <span className="m8-cta-corner m8-cta-corner-tr" aria-hidden>
+        ┐
+      </span>
+      <span className="m8-cta-corner m8-cta-corner-bl" aria-hidden>
+        └
+      </span>
+      <span className="m8-cta-corner m8-cta-corner-br" aria-hidden>
+        ┘
+      </span>
+      <span className="m8-cta-label">{label}</span>
     </button>
   );
 }

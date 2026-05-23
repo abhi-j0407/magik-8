@@ -1,10 +1,13 @@
 ---
 id: design
 version: 1.0.0
-status: active
+status: superseded
+superseded-by: DESIGN-V2.md
 ---
 
-# DESIGN — Magik 8
+# DESIGN — Magik 8 (V1)
+
+> **Superseded** by [`DESIGN-V2.md`](./DESIGN-V2.md) (Design V2 integration complete). Kept for historical token names and PRD cross-references.
 
 Faithful homage to the black-and-white billiard ball + cobalt answer window. Technical polish via motion and sound, not via redesigning the icon.
 
