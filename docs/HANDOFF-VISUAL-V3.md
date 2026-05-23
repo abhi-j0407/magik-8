@@ -2,7 +2,7 @@
 id: handoff-visual-v3
 version: 1.0.0
 status: active
-current_phase: G7
+current_phase: G8
 webgl_flag: off (default until G9 sign-off)
 deploy_url: null
 ---
@@ -17,25 +17,25 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — G6
+## Handoff — G7
 **Status:** complete
-**Agent:** G6 implementer
-**Branch / PR:** merged to `main` @ 5c53346 (squash; remote `phase/g6-text` deleted)
+**Agent:** G7 implementer
+**Branch / PR:** merged to `main` @ 001f4c0 (squash; remote `phase/g7-backdrop` deleted)
 **Changed:**
-- src/three/AnswerText.tsx — drei Text, auto-fit, getAnswerDisplayText, DIE_WINDOW_RADIUS export
-- src/three/answerText.test.ts — font sizing + display text tests
-- src/three/Die.tsx — oracle result + AnswerText mount
-- src/three/OracleScene.tsx — WebGL sr-only aria-live (OracleAnswerLiveRegion)
-**Verified:** tsc ✓ · build ✓ · test ✓ (49) · e2e ✓ (3) · /code-review ✓ · visual ✓ (manual flag-on recommended)
-**Acceptance:** text behind glass; longest strings fit; amber easter egg; flag-off unchanged; text hidden idle/shaking
-**Integration:** AnswerText API; Oswald 600 from Google Fonts; aria-live in OracleScene when flag-on
-**Next:** G7 — backdrop + postprocessing (critical path); G8 chrome parallel if staffed
+- src/three/Background.tsx — drifting mesh-gradient plane
+- src/three/Effects.tsx — Bloom + CA + Vignette (no Noise)
+- src/three/shaders/gradient.vert, gradient.frag — token-driven blobs
+- src/three/OracleScene.tsx — mount Background + Effects
+**Verified:** tsc ✓ · build ✓ · test ✓ (49) · e2e ✓ (3) · /code-review ✓ · visual ✓
+**Acceptance:** dark drifting backdrop; ball pops; §5.5 post subtle; CSS grain canonical; flag-off green
+**Integration:** composer multisampling=4; canvas alpha true; G8 theme retint may update Background uniforms
+**Next:** G8 — center theme chips + WebGL share capture + liquid theme retint
 **Blockers:** none
 **Notes for next agent:**
-- DIE_WINDOW_RADIUS in AnswerText.tsx; Die re-exports
-- Glass renderOrder=10 unchanged
-- G9: self-host Oswald for offline troika
-- Spot-check longest career/party strings visually
+- G9: tune bloom/MSAA on mid mobile
+- Page .m8-vignette stacks with post Vignette
+- G8 share: preserveDrawingBuffer on Canvas if WebGL in PNG
+- Oswald self-host backlog (G6/G9)
 ```
 
 ## Phase checklist
@@ -46,7 +46,7 @@ deploy_url: null
 - [x] **G4** — Liquid & bob (animated surface shader, meniscus, shake-driven slosh)
 - [x] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
 - [x] **G6** — Text behind glass (die-face `Text`/`Text3D`, auto-fit/wrap, amber easter-egg) — *fixes defect 4*
-- [ ] **G7** — Backdrop & post (mesh-gradient bg, Bloom/CA/Vignette/Noise) — *∥ after G2*
+- [x] **G7** — Backdrop & post (mesh-gradient bg, Bloom/CA/Vignette/Noise) — *∥ after G2*
 - [ ] **G8** — Chrome & integration (center modes, share-card WebGL capture, theme retint) — *fixes defect 1, ∥ after G1*
 - [ ] **G9** — QA, perf, a11y (Lighthouse budget, AdaptiveDpr, fallback verify, e2e both paths) — *no deploy*
 
@@ -54,8 +54,9 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/Background.tsx`, `Effects.tsx`, `shaders/gradient.*` | G7 | G7 merged |
-| `src/three/OracleScene.tsx` (mount bg/effects only) | G7 | G7 merged |
+| `src/components/ThemeChips.tsx`, `ShareCard.tsx` | G8 | G8 merged |
+| `src/lib/shareExport.ts` | G8 | G8 merged |
+| `src/three/Background.tsx`, `Liquid.tsx` (theme retint uniforms) | G8 | G8 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`, or `src/index.css` at once.
 
