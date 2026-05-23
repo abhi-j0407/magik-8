@@ -18,8 +18,12 @@ const REVEAL_EASE = 'cubic-bezier(0.16, 0.8, 0.3, 1)';
 const IDLE_EASE = 'power2.out';
 const IDLE_MS = 0.2;
 const SHAKE_RAMP_S = 0.2;
-const JITTER_Y = 0.01;
-const JITTER_Z_RAD = Math.PI / 180;
+/** Perceptible translate amplitude (world units); plan §4: ±0.06–0.12. */
+export const SHAKE_POS_AMPLITUDE = 0.09;
+/** Perceptible tilt (rad); plan §4: ±~0.08–0.15 (~6°). */
+export const SHAKE_TILT_RAD = 0.12;
+const SHAKE_SETTLE_S = 0.06;
+const SHAKE_CYCLE_HALF_S = 0.035;
 
 function cssColorToVec3(css: string, target: Vector3): Vector3 {
   const c = new Color(css);
@@ -44,13 +48,61 @@ function resetJitter(jitterGroup: Group | null | undefined): void {
   gsap.set(jitterGroup.rotation, { x: 0, y: 0, z: 0 });
 }
 
+/** Multi-axis translate + tilt on jitterRef; yoyo cycles then ease out to zero within SHAKE_DURATION_MS. */
+function runTransformShake(jitterGroup: Group): void {
+  resetJitter(jitterGroup);
+  const shakeWindowS = SHAKE_DURATION_MS / 1000 - SHAKE_SETTLE_S;
+  const repeats = Math.max(
+    2,
+    Math.floor(shakeWindowS / (SHAKE_CYCLE_HALF_S * 2)) - 1,
+  );
+
+  const tl = gsap.timeline({
+    onComplete: () => resetJitter(jitterGroup),
+  });
+
+  tl.to(
+    jitterGroup.position,
+    {
+      x: SHAKE_POS_AMPLITUDE,
+      y: SHAKE_POS_AMPLITUDE * 0.85,
+      z: -SHAKE_POS_AMPLITUDE * 0.7,
+      duration: SHAKE_CYCLE_HALF_S,
+      yoyo: true,
+      repeat: repeats,
+      ease: 'sine.inOut',
+    },
+    0,
+  );
+  tl.to(
+    jitterGroup.rotation,
+    {
+      x: SHAKE_TILT_RAD,
+      z: -SHAKE_TILT_RAD * 0.85,
+      duration: SHAKE_CYCLE_HALF_S,
+      yoyo: true,
+      repeat: repeats,
+      ease: 'sine.inOut',
+    },
+    0,
+  );
+  tl.to(
+    jitterGroup.position,
+    { x: 0, y: 0, z: 0, duration: SHAKE_SETTLE_S, ease: 'power2.out' },
+    '>',
+  );
+  tl.to(
+    jitterGroup.rotation,
+    { x: 0, y: 0, z: 0, duration: SHAKE_SETTLE_S, ease: 'power2.out' },
+    '<',
+  );
+}
+
 function prepareRevealInk(result: OracleResult | null | undefined): void {
   const egg = result?.isEasterEgg ?? false;
   answerPanelUniforms.isEasterEgg.value = egg ? 1 : 0;
   if (egg) {
     cssColorToVec3(resolveM8Color('amber'), answerPanelUniforms.inkTextTint.value);
-  } else {
-    cssColorToVec3(resolveM8Color('answerInk'), answerPanelUniforms.inkTextTint.value);
   }
   const displayKey = getAnswerDisplayText(result ?? null);
   if (displayKey) {
@@ -146,21 +198,7 @@ export function applyOracleChoreographyPhase(
       ease: 'power2.out',
     });
     if (jitterGroup) {
-      const jitterRepeats = Math.max(0, Math.floor(SHAKE_DURATION_MS / 80) - 1);
-      gsap.to(jitterGroup.position, {
-        y: JITTER_Y,
-        duration: 0.08,
-        yoyo: true,
-        repeat: jitterRepeats,
-        ease: 'sine.inOut',
-      });
-      gsap.to(jitterGroup.rotation, {
-        z: JITTER_Z_RAD,
-        duration: 0.1,
-        yoyo: true,
-        repeat: jitterRepeats,
-        ease: 'sine.inOut',
-      });
+      runTransformShake(jitterGroup);
     }
     return;
   }

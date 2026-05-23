@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gsap from 'gsap';
+import { Group } from 'three';
 import type { OracleResult } from '../types/oracle';
 import { answerPanelUniforms } from './AnswerPanel';
 import { __buildAnswerAtlasForTests, __resetAnswerAtlasForTests } from './answerAtlas';
 import { oracleSceneTimeScale } from './oracleSceneClock';
-import { applyOracleChoreographyPhase } from './useOracleChoreography';
+import {
+  SHAKE_POS_AMPLITUDE,
+  SHAKE_TILT_RAD,
+  applyOracleChoreographyPhase,
+} from './useOracleChoreography';
 
 function installCanvasDocument(): void {
   vi.stubGlobal('getComputedStyle', () => ({
@@ -147,5 +152,67 @@ describe('applyOracleChoreographyPhase', () => {
     applyOracleChoreographyPhase('shaking', 'idle', {});
     completeActiveGsap();
     expect(oracleSceneTimeScale.value).toBeCloseTo(3, 1);
+  });
+
+  it('shaking tweens jitter with perceptible multi-axis translate + tilt', () => {
+    const jitterGroup = new Group();
+    applyOracleChoreographyPhase('shaking', 'idle', { jitterGroup });
+
+    const posTweens = gsap.getTweensOf(jitterGroup.position);
+    const rotTweens = gsap.getTweensOf(jitterGroup.rotation);
+    expect(posTweens.length).toBeGreaterThan(0);
+    expect(rotTweens.length).toBeGreaterThan(0);
+
+    const posTween = posTweens.find((t) => t.vars.yoyo === true) ?? posTweens[0];
+    expect(Math.abs(posTween.vars.x as number)).toBeGreaterThanOrEqual(0.06);
+    expect(Math.abs(posTween.vars.y as number)).toBeGreaterThanOrEqual(0.06);
+    expect(Math.abs(posTween.vars.z as number)).toBeGreaterThanOrEqual(0.06);
+    expect(posTween.vars.yoyo).toBe(true);
+
+    const rotTween = rotTweens.find((t) => t.vars.yoyo === true) ?? rotTweens[0];
+    expect(Math.abs(rotTween.vars.x as number)).toBeGreaterThanOrEqual(0.08);
+    expect(Math.abs(rotTween.vars.z as number)).toBeGreaterThanOrEqual(0.08);
+    expect(rotTween.vars.yoyo).toBe(true);
+
+    expect(SHAKE_POS_AMPLITUDE).toBeGreaterThanOrEqual(0.06);
+    expect(SHAKE_TILT_RAD).toBeGreaterThanOrEqual(0.08);
+  });
+
+  it('shaking settles jitter transform to zero after tweens complete', () => {
+    vi.useFakeTimers();
+    const jitterGroup = new Group();
+    applyOracleChoreographyPhase('shaking', 'idle', { jitterGroup });
+    vi.advanceTimersByTime(450);
+    expect(jitterGroup.position.x).toBeCloseTo(0, 5);
+    expect(jitterGroup.position.y).toBeCloseTo(0, 5);
+    expect(jitterGroup.position.z).toBeCloseTo(0, 5);
+    expect(jitterGroup.rotation.x).toBeCloseTo(0, 5);
+    expect(jitterGroup.rotation.y).toBeCloseTo(0, 5);
+    expect(jitterGroup.rotation.z).toBeCloseTo(0, 5);
+    vi.useRealTimers();
+  });
+
+  it('reducedMotion shaking skips position/rotation tweens but ramps timeScale', () => {
+    const jitterGroup = new Group();
+    applyOracleChoreographyPhase('shaking', 'idle', {
+      jitterGroup,
+      reducedMotion: true,
+    });
+    expect(gsap.getTweensOf(jitterGroup.position)).toHaveLength(0);
+    expect(gsap.getTweensOf(jitterGroup.rotation)).toHaveLength(0);
+    expect(oracleSceneTimeScale.value).toBe(3);
+  });
+
+  it('revealing resets jitter immediately when entering from shaking', () => {
+    const jitterGroup = new Group();
+    applyOracleChoreographyPhase('shaking', 'idle', { jitterGroup });
+    jitterGroup.position.set(0.2, 0.1, -0.1);
+    jitterGroup.rotation.set(0.1, 0, -0.12);
+    applyOracleChoreographyPhase('revealing', 'shaking', {
+      jitterGroup,
+      result: sampleResult,
+    });
+    expect(jitterGroup.position.x).toBe(0);
+    expect(jitterGroup.rotation.z).toBe(0);
   });
 });
