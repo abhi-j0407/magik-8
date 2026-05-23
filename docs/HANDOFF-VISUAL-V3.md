@@ -2,7 +2,7 @@
 id: handoff-visual-v3
 version: 1.0.0
 status: active
-current_phase: G2
+current_phase: G3
 webgl_flag: off (default until G9 sign-off)
 deploy_url: null
 ---
@@ -17,41 +17,39 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — G1
+## Handoff — G2
 **Status:** complete
-**Agent:** G1 implementer
-**Branch / PR:** merged to `main` @ a10ff8a (squash; remote `phase/g1-foundation` deleted)
+**Agent:** G2 implementer
+**Branch / PR:** phase/g2-ball — https://github.com/abhi-j0407/magik-8/pull/new/phase/g2-ball
 **Changed:**
-- package.json / package-lock.json — pin three@0.184.0, R3F v9/v10, postprocessing v3, gsap 3.15.0
-- src/components/OracleStage.tsx — VITE_WEBGL seam + Suspense/MagikBall fallback
-- src/three/OracleScene.tsx — lazy Canvas placeholder sphere (phase spin/settle/idle)
-- src/three/useWebglCapability.ts — WebGL probe, reduced-motion, low-power heuristic
-- src/three/tokens.ts — CSS var → sRGB resolver for palette
-- src/App.tsx — MagikBall → OracleStage
-- vite.config.ts — workbox runtime cache for OracleScene/three chunks
+- src/three/Ball.tsx — MeshPhysicalMaterial sphere + procedural embossed "8" disc
+- src/three/Lighting.tsx — HDRI Environment + key (upper-left) + rim back light
+- src/three/OracleScene.tsx — Ball + Lighting + ContactShadows; ACES/sRGB; removed CSS drop-shadow
+- public/hdri/studio_small_08_1k.hdr + README.md — Poly Haven CC0 env map
+- scripts/generate-eight-texture.mjs — documents procedural texture path
 **Verified:**
 - `npx tsc -b` — exit 0
-- `npm run build` — exit 0; lazy chunk `OracleScene-*.js` ~893 kB
+- `npm run build` — exit 0; OracleScene chunk ~956 kB; dist/hdri/*.hdr present
 - `npm test` — 8 files, 45 tests passed
-- `npm run test:e2e` — 3 passed (flag off, no VITE_WEBGL)
-- /code-review — self-review: no blockers; WebGL path lacks AnswerTriangle/ANIMATION_DONE until G5/G6
-- visual — flag-off matches CSS ball; flag-on smoke: sphere reacts (manual VITE_WEBGL=true)
-**Acceptance:** deps pinned on React 19.2.x peers; OracleStage + capability + lazy placeholder; flag OFF unchanged tests; workbox caches lazy chunk; tsc/build/test/e2e green
-**Integration:** `OracleStage` exports default seam; lazy `import('../three/OracleScene')`; flag `VITE_WEBGL=true`; tokens via `resolveM8Color()`; G2 mounts Ball in `OracleScene`
-**Next:** G2 — glossy MeshPhysicalMaterial ball + HDRI Environment + rim lights + ContactShadows + 8 disc
+- `npm run test:e2e` — 3 passed (flag off)
+- /code-review — self-review: no blockers; workbox precache still omits `.hdr` (static serve OK; note for G9)
+- visual — flag-on: glossy ball, rim edge, "8" on +Z, ContactShadows ground (manual VITE_WEBGL=true)
+**Acceptance:** §5.2 material params; §5.4 lighting; defect 2 rim separation; defect 6 ContactShadows replaces button drop-shadow; flag-off regression green
+**Integration:** `Ball` + `Lighting` mounted in `OracleCanvas`; HDRI at `/hdri/studio_small_08_1k.hdr`; G3 adds AnswerWindow/Die in same Canvas
+**Next:** G3 — MeshTransmissionMaterial window + liquid volume + icosahedron die (settled pose)
 **Blockers:** none
 **Notes for next agent:**
-- Pinned: three 0.184.0, @react-three/fiber 9.6.1, @react-three/drei 10.7.7, @react-three/postprocessing 3.0.4, postprocessing 6.39.1, gsap 3.15.0
-- Low-power: hardwareConcurrency ≤ 2 OR deviceMemory ≤ 2 GiB → CSS fallback
-- Placeholder uses meshStandardMaterial + resolveM8Color('sphereCore'); no HDRI/post/GSAP yet
-- VITE_WEBGL=true path does not dispatch ANIMATION_DONE — full ritual e2e still flag-off only until G5
-- Build emits single lazy `OracleScene-*.js` (three bundled inside); workbox precache + runtime pattern
+- `createEightDiscTexture()` in Ball.tsx — stripe/eight/sphereWarm tokens; edit for disc art tweaks
+- Phase spin/bob on `<group>` wrapping ball+disc (unchanged from G1 placeholder behavior)
+- No ANIMATION_DONE / AnswerWindow / post / GSAP yet
+- OracleScene button no longer uses CSS filter drop-shadow — shadow from ContactShadows only
+- HDRI ~1.4 MB in dist; extend workbox glob for `.hdr` in G9 if offline env required
 ```
 
 ## Phase checklist
 
 - [x] **G1** — Foundation & seam (deps, `OracleStage` flag + capability, lazy placeholder Canvas, CSS fallback)
-- [ ] **G2** — The ball (glossy `MeshPhysicalMaterial`, HDRI `<Environment>`, key+rim lights, `<ContactShadows>`, "8" disc) — *fixes defect 2, 6*
+- [x] **G2** — The ball (glossy `MeshPhysicalMaterial`, HDRI `<Environment>`, key+rim lights, `<ContactShadows>`, "8" disc) — *fixes defect 2, 6*
 - [ ] **G3** — Window mechanism (glass + cobalt liquid + d20 die + triangular answer face, settled) — *fixes defect 3, 5, 6*
 - [ ] **G4** — Liquid & bob (animated surface shader, meniscus, shake-driven slosh)
 - [ ] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
@@ -64,8 +62,8 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/Ball.tsx`, `Lighting.tsx`, `public/hdri/*` | G2 | G2 merged |
-| `src/three/OracleScene.tsx` (mount Ball+Lighting) | G2 | G2 merged |
+| `src/three/AnswerWindow.tsx`, `Die.tsx` | G3 | G3 merged |
+| `src/three/OracleScene.tsx` (mount window/die) | G3 | G3 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`, or `src/index.css` at once.
 
@@ -104,7 +102,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 | Check | Pass | Notes |
 |-------|------|-------|
 | Flag-off = today's behavior | yes | G1 — e2e 3/3, Vitest 45/45 |
-| Ball separated from bg | — | G2 |
+| Ball separated from bg | yes | G2 — rim + HDRI + ContactShadows |
 | Window centered on reveal | — | G3/G5 |
 | Liquid sloshes / settles | — | G4 |
 | Text behind glass, fits longest answer | — | G6 |
