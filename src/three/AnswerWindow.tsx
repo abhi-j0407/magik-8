@@ -1,8 +1,9 @@
 import { MeshTransmissionMaterial } from '@react-three/drei';
 import { useMemo } from 'react';
-import { Color, DoubleSide, MeshStandardMaterial } from 'three';
+import { Color, MeshStandardMaterial } from 'three';
 import type { OraclePhase } from '../types/oracle';
 import { Die } from './Die';
+import { Liquid } from './Liquid';
 import { resolveM8Color } from './tokens';
 
 /** Matches Ball.tsx BALL_RADIUS — duplicated to avoid editing Ball in G3. */
@@ -34,9 +35,6 @@ export function AnswerWindow({ phase }: AnswerWindowProps) {
   const visible = isWindowVisible(phase);
   const rotation = visible ? ROT_SETTLED : ROT_HIDDEN;
 
-  const fluidDeep = useMemo(() => new Color(resolveM8Color('fluidDeep')), []);
-  const fluidMid = useMemo(() => new Color(resolveM8Color('fluidMid')), []);
-  const fluidMeniscus = useMemo(() => new Color(resolveM8Color('fluidMeniscus')), []);
   const glassTint = useMemo(() => new Color(resolveM8Color('fluidDeep')), []);
 
   const recessMaterial = useMemo(
@@ -47,45 +45,6 @@ export function AnswerWindow({ phase }: AnswerWindowProps) {
         metalness: 0,
       }),
     [],
-  );
-
-  const liquidBaseMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: fluidDeep,
-        roughness: 0.35,
-        metalness: 0.05,
-        emissive: fluidMid,
-        emissiveIntensity: 0.25,
-      }),
-    [fluidDeep, fluidMid],
-  );
-
-  const liquidMidMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: fluidMid,
-        roughness: 0.28,
-        metalness: 0.08,
-        transparent: true,
-        opacity: 0.85,
-      }),
-    [fluidMid],
-  );
-
-  const meniscusMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: fluidMeniscus,
-        roughness: 0.12,
-        metalness: 0.15,
-        emissive: fluidMeniscus,
-        emissiveIntensity: 0.35,
-        transparent: true,
-        opacity: 0.9,
-        side: DoubleSide,
-      }),
-    [fluidMeniscus],
   );
 
   return (
@@ -102,26 +61,7 @@ export function AnswerWindow({ phase }: AnswerWindowProps) {
         />
       </mesh>
 
-      {/* Static liquid volume (G4 adds animated shader) */}
-      <mesh
-        position={[0, 0, LIQUID_DEPTH * 0.45]}
-        rotation={[Math.PI / 2, 0, 0]}
-        material={liquidBaseMaterial}
-        renderOrder={1}
-      >
-        <cylinderGeometry args={[WINDOW_RADIUS * 0.92, WINDOW_RADIUS * 0.88, LIQUID_DEPTH, 48]} />
-      </mesh>
-      <mesh
-        position={[0, 0, LIQUID_DEPTH * 0.12]}
-        rotation={[Math.PI / 2, 0, 0]}
-        material={liquidMidMaterial}
-        renderOrder={2}
-      >
-        <cylinderGeometry args={[WINDOW_RADIUS * 0.78, WINDOW_RADIUS * 0.72, LIQUID_DEPTH * 0.55, 48]} />
-      </mesh>
-      <mesh position={[0, 0, -LIQUID_DEPTH * 0.08]} material={meniscusMaterial} renderOrder={3}>
-        <torusGeometry args={[WINDOW_RADIUS * 0.62, 0.012, 12, 48]} />
-      </mesh>
+      <Liquid phase={phase} radius={WINDOW_RADIUS} depth={LIQUID_DEPTH} />
 
       <Die phase={phase} />
 
