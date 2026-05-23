@@ -124,8 +124,8 @@ Mobile-first installable PWA with shake-to-reveal (and accessible fallback), thr
 
 **Acceptance:**
 - [x] `dev:https` script documented in README
-- [ ] Production deploy on HTTPS host (overseer)
-- [ ] HANDOFF records `deploy_url` (overseer)
+- [ ] Production deploy on HTTPS host (overseer — Vercel personal team [**abhij0407s-projects**](https://vercel.com/abhij0407s-projects); see [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md))
+- [ ] HANDOFF records `deploy_url` (after first prod deployment)
 
 ---
 

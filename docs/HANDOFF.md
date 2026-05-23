@@ -20,8 +20,8 @@ deploy_url: null
 **Verified:** npm run build ✓ · npm test ✓ (45) · npm run test:e2e ✓ (3) · `rg '--magik-' src/` empty ✓
 **Integration:** D1–D8 complete — tokens, ball, triangle, chrome, share card, motion, e2e, docs
 **Polish:** README/docs sync · theme-color `#1a1a20` · touch targets ≥44px
-**Next:** Ship — overseer pushes `main`, connects Vercel, sets `deploy_url` below
-**Blockers:** none (device QA: iPhone audio, Android shake — overseer backlog)
+**Next:** Vercel (personal team) — follow [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md) → set `deploy_url` when production URL exists  
+**Blockers:** none (device QA: iPhone audio, Android shake — backlog)
 ```
 
 ## Phase checklist
@@ -35,7 +35,9 @@ deploy_url: null
 - [x] **PHASE-5** — Share card, manifest/icons, offline shell
 - [x] **PHASE-6** — QA matrix, Lighthouse, Playwright smoke
 - [x] **Design V2** — Claude Design pack (`magik-8_CLAUDE_DESIGN/`) integrated D1–D8; spec in [`DESIGN-V2.md`](./DESIGN-V2.md)
-- [ ] **Ship** — Overseer: GitHub push → Vercel connect → set `deploy_url` below
+- [x] **Ship (Git)** — `main` on GitHub; remote `origin` uses SSH (`git@github.com:abhi-j0407/magik-8.git`)
+- [ ] **Ship (Vercel)** — Overseer creates project under [abhij0407s-projects](https://vercel.com/abhij0407s-projects) per [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md); set `deploy_url` below after first prod deploy  
+  - GitHub **default branch** → `main` if not already (Settings → General → Default branch), or terminal: `gh auth login` → `gh repo edit abhi-j0407/magik-8 --default-branch main`
 
 ## Active locks
 
@@ -87,17 +89,41 @@ Archive: `magik-8_CLAUDE_DESIGN/` (exports, prompts, prototype — do not delete
 | Stack | Vite + React + TypeScript + Tailwind v4 |
 | Themes v1 | Classic, Career Coach, Party Mode |
 | Easter egg rate | 1/40 shakes + first-visit egg |
-| Deploy | **Overseer only** — ready after Design V2 |
+| Deploy | Personal Vercel team [**abhij0407s-projects**](https://vercel.com/abhij0407s-projects) — create project via dashboard only ([`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md)) |
+
+## Deploy — Vercel (personal account)
+
+**Vercel team:** [abhij0407’s projects](https://vercel.com/abhij0407s-projects).
+
+**Instructions:** **[`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md)** (dashboard import of `abhi-j0407/magik-8`, branch `main`).
+
+| Field | Value |
+|-------|-------|
+| Target | Vercel — personal team **`abhij0407s-projects`** |
+| Repo | [`abhi-j0407/magik-8`](https://github.com/abhi-j0407/magik-8) |
+| Prod branch | `main` |
+| URL | `deploy_url` in frontmatter (_set after deploy_) |
+
+---
+
+## Production verification (after deploy URL exists)
+
+HTTPS production domain only (`deploy_url`). Use DevTools Application tab for manifest + service worker.
+
+| Check | Notes |
+|-------|-------|
+| App shell | Wordmark, theme chips, mute, CTA loads |
+| Tap ritual | Shake/tap reveals answer + share row |
+| PWA | Valid manifest; SW registers; revisit offline after first load |
+| Share | Generates PNG / share sheet or download |
+| Audio | Toggle mute → SFX after user gesture (**B-02** iPhone Safari) |
+| Shake | Motion permission → shake completes ritual (**B-03** Android matrix optional) |
+| Lighthouse PWA | Run against prod (**B-04**) — DevTools Lighthouse or PageSpeed |
+
+---
 
 ## Environment secrets
 
 None required for v1. No API keys.
 
-## Deploy (overseer — ready)
-
-| Field | Value |
-|-------|-------|
-| Target | Vercel (`vercel.json` present) or Cloudflare Pages |
-| URL | _null until you connect repo and deploy; paste prod URL here_ |
-
-**Steps (you, not agents):** push `main` → import repo in Vercel → deploy → set `deploy_url` in frontmatter → link from external case study.
+**After Vercel prod is live:** Paste the production HTTPS URL into frontmatter `deploy_url` and tick **Ship (Vercel)** in the phase checklist above. Link prod from your external case study as needed.
