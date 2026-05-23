@@ -10,8 +10,6 @@ import {
   type CanvasTexture,
 } from 'three';
 import { useOracle } from '../context/OracleContext';
-import type { OraclePhase } from '../types/oracle';
-import { getAnswerDisplayText, getAnswerTexture } from './answerAtlas';
 import { resolveM8Color } from './tokens';
 
 /** cywarr lens stack Y — 0.75 × ball radius (R=4 → 3.0; R=1 → 0.75). */
@@ -76,13 +74,8 @@ export const answerPanelUniforms = {
   },
 };
 
-type AnswerPanelProps = {
-  phase: OraclePhase;
-  reducedMotion?: boolean;
-};
-
-export function AnswerPanel({ phase, reducedMotion: _reducedMotion = false }: AnswerPanelProps) {
-  const { result, packId } = useOracle();
+export function AnswerPanel() {
+  const { packId } = useOracle();
 
   const geometry = useMemo(() => {
     const g = new PlaneGeometry(0.4, 0.4);
@@ -155,32 +148,7 @@ export function AnswerPanel({ phase, reducedMotion: _reducedMotion = false }: An
 
   useEffect(() => {
     cssColorToVec3(resolveM8Color('answerInk'), answerPanelUniforms.inkTextTint.value);
-    const amber = new Vector3();
-    cssColorToVec3(resolveM8Color('amber'), amber);
-
-    const egg = result?.isEasterEgg ?? false;
-    answerPanelUniforms.isEasterEgg.value = egg ? 1 : 0;
-    if (egg) {
-      answerPanelUniforms.inkTextTint.value.copy(amber);
-    } else {
-      cssColorToVec3(resolveM8Color('answerInk'), answerPanelUniforms.inkTextTint.value);
-    }
-
-    const displayKey = getAnswerDisplayText(result ?? null);
-    if (phase === 'revealing' || phase === 'answered') {
-      if (displayKey) {
-        answerPanelUniforms.setText(getAnswerTexture(displayKey, egg));
-      }
-    }
-
-    if (phase === 'answered') {
-      answerPanelUniforms.baseVisibility.value = 0.375;
-      answerPanelUniforms.textVisibility.value = 1;
-    } else if (phase === 'idle' || phase === 'shaking') {
-      answerPanelUniforms.baseVisibility.value = 1;
-      answerPanelUniforms.textVisibility.value = 0;
-    }
-  }, [phase, result, packId]);
+  }, [packId]);
 
   useEffect(() => {
     material.color.set(resolveM8Color('fluidHi'));

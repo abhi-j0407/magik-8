@@ -24,8 +24,8 @@ import { useOracleChoreography } from './useOracleChoreography';
 
 export const BALL_RADIUS = 1;
 
-/** Shared with Background — F4 will tween timeScale on this ref. */
-export const oracleSceneTime = { value: 0 };
+export { oracleSceneTime, oracleSceneTimeScale } from './oracleSceneClock';
+import { oracleSceneTime, oracleSceneTimeScale } from './oracleSceneClock';
 
 // https://github.com/yiwenl/glsl-fbm/blob/master/3d.glsl (cywarr index.html)
 const CYWARR_FBM = `
@@ -153,12 +153,17 @@ type BallProps = {
 };
 
 export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProps) {
-  const { packId } = useOracle();
-  const choreoRef = useRef<Group>(null);
+  const { packId, result } = useOracle();
+  const jitterRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
   const envTex = useLoader(TextureLoader, ENV_MAP_PATH) as Texture;
 
-  useOracleChoreography(choreoRef, { phase, onAnimationDone, reducedMotion });
+  useOracleChoreography(jitterRef, {
+    phase,
+    result,
+    onAnimationDone,
+    reducedMotion,
+  });
 
   const geometry = useMemo(() => buildCywarrBallGeometry(BALL_RADIUS), []);
 
@@ -263,15 +268,13 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
   }, [envTex, packId]);
 
   useFrame((state) => {
-    oracleSceneTime.value = state.clock.elapsedTime;
+    oracleSceneTime.value = state.clock.elapsedTime * oracleSceneTimeScale.value;
   });
 
   return (
-    <group>
+    <group ref={jitterRef}>
       <mesh ref={meshRef} geometry={geometry} material={materials} renderOrder={9999} />
-      <AnswerPanel phase={phase} reducedMotion={reducedMotion} />
-      {/* F4 replaces rotation choreography; hidden anchor keeps FSM reveal until then. */}
-      <group ref={choreoRef} visible={false} />
+      <AnswerPanel />
     </group>
   );
 }
