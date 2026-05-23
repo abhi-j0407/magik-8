@@ -3,7 +3,9 @@ import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './AnswerText';
+import { Background } from './Background';
 import { Ball } from './Ball';
+import { Effects } from './Effects';
 import { Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
 
@@ -26,6 +28,7 @@ function OracleCanvas() {
       style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
     >
       <color attach="background" args={['transparent']} />
+      <Background />
       <Lighting />
       <Ball
         phase={phase}
@@ -41,6 +44,7 @@ function OracleCanvas() {
         resolution={256}
         color="#000000"
       />
+      <Effects />
     </Canvas>
   );
 }
