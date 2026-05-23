@@ -21,7 +21,7 @@ deploy_url: null
 ## Handoff — F5
 **Status:** complete
 **Agent:** F5 implementer
-**Branch / PR:** fix/v5-f5-qa — (see PR URL after gh pr create)
+**Branch / PR:** fix/v5-f5-qa — merged to main as 26a0d13 (squash)
 **Changed:**
 - docs/HANDOFF-VISUAL-V5-CYWARR-FIDELITY.md — F5-complete, QA table, flag-on checklist, lighthouse scores
 - docs/PLAN-VISUAL-V5-CYWARR-FIDELITY.md — status complete (tracked)
