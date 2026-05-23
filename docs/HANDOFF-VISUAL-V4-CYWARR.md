@@ -2,7 +2,7 @@
 id: handoff-visual-v4-cywarr
 version: 1.0.0
 status: active
-current_phase: F3
+current_phase: F4
 webgl_flag: off (user enables via VITE_WEBGL=true once F4 lands and visual QA passes)
 deploy_url: null
 ---
@@ -18,35 +18,33 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F2
+## Handoff — F3
 **Status:** complete (squash-merged to main)
-**Agent:** F2 implementer
-**Branch / PR:** fix/v4-f2-cywarr-port — merged to main (ef356e4)
+**Agent:** F3 implementer
+**Branch / PR:** fix/v4-f3-ink-panel — merged to main (4b04a2f)
 **Changed:**
-- src/three/Ball.tsx — cywarr merged shell + FBM/sine shaders, oracleSceneTime export, no eight decal
-- src/three/Lighting.tsx — ambient-only + ENV_MAP_PATH export
-- src/three/Background.tsx — simplex-4D noise sky sphere + pack tint
-- src/three/Effects.tsx — postprocessing removed (returns null)
-- src/three/OracleScene.tsx — cywarr camera, OrbitControls, exposure 1.0
-- src/three/shaders/gradient.{frag,vert} — deleted
-- scripts/generate-eight-texture.mjs — deleted
-**Verified:** tsc ✓ · build ✓ · test ✓ (59) · e2e ✓ (5) · coordinator re-check ✓ · flag-off regression ✓ · visual ✓ (webgl e2e)
-**Acceptance:** F2 plan row — partial-sphere + lens cap, FBM shimmer, ambient + JPG env, noise backdrop, no directionals/post/Bloom, no eight decal, camera/controls per spec, group does not spin
-**Integration:** oracleSceneTime in Ball.tsx ({ value: number }); F4 tweens timeScale on same ref. ENV_MAP_PATH from Lighting. OrbitControls when phase idle/answered. AnswerWindow still inside Ball until F3.
-**Next:** F3 — Answer ink panel + stylised "8"
+- src/three/answerAtlas.ts + answerAtlas.test.ts — phrase CanvasTexture atlas
+- src/three/AnswerPanel.tsx — instanced ink panel + answerPanelUniforms singleton
+- src/three/Ball.tsx — AnswerWindow → AnswerPanel
+- src/three/OracleScene.tsx — aria-live import from answerAtlas
+- Deleted: Die, Liquid, AnswerWindow, AnswerText, answerText.test, liquid shaders
+**Verified:** tsc ✓ · build ✓ · test ✓ (60) · e2e ✓ (5) · coordinator re-check ✓ · flag-off ✓ · visual ✓ (webgl e2e)
+**Acceptance:** V3 answer stack removed; cywarr ink panel + atlas; answerPanelUniforms exported; texture bound on revealing/answered; easter-egg amber; e2e green
+**Integration:** answerPanelUniforms { baseVisibility, textVisibility, text, isEasterEgg, inkTextTint, setText }; LENS_TOP_Y=0.75; getAnswerTexture / getAnswerDisplayText in answerAtlas.ts
+**Next:** F4 — Opacity reveal choreography
 **Blockers:** none
 **Notes for next agent:**
-- Ball mesh static; choreography on hidden child group until F4
-- Replace AnswerWindow with AnswerPanel; delete Die/Liquid/AnswerText
-- isEightDiscVisible stays in useOracleChoreography until F4
-- Export ink uniform singleton for F4 (baseVisibility, textVisibility, setText)
+- Remove AnswerPanel phase static overrides (answered/revealing) once F4 owns tweens
+- revealing keeps textVisibility=0 until answered today — F4 chains 300ms+300ms during revealing
+- Delete rotation symbols from useOracleChoreography; tween timeScale on oracleSceneTime
+- Manual: VITE_WEBGL=true — triangle + rings + phrase, amber on easter egg
 ```
 
 ## Phase checklist
 
 - [x] **F1** — Kill the Suspense fallback paths *(drop drei Environment + Text + transmission, error boundary, context-loss listener, relax capability probe, `renderingLocked` CSS prop)*
 - [x] **F2** — cywarr ball geometry, camera, lighting, backdrop *(partial-sphere shell + lens cap, FBM shimmer, simplex-noise sky, ambient + equirect JPG)*
-- [ ] **F3** — Answer ink panel + stylised "8" *(4 instanced quads, triangle + 2 rings SDF, CanvasTexture phrase atlas, easter-egg amber)*
+- [x] **F3** — Answer ink panel + stylised "8" *(4 instanced quads, triangle + 2 rings SDF, CanvasTexture phrase atlas, easter-egg amber)*
 - [ ] **F4** — Opacity reveal choreography *(no rotation; baseVisibility + textVisibility tweens; timeScale shake)*
 - [ ] **F5** — Deletes, deps, verification, docs *(remove postprocessing if unused, DPR cap, e2e + lighthouse, supersede V3 docs)*
 
@@ -54,11 +52,11 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/answerAtlas.ts` + `.test.ts` (new) | F3 | F3 merged |
-| `src/three/AnswerPanel.tsx` (new) | F3 | F3 merged |
-| `src/three/AnswerWindow.tsx`, `Die.tsx`, `Liquid.tsx`, `AnswerText.tsx` (delete) | F3 | F3 merged |
-| `src/three/shaders/liquid.{frag,vert}`, `answerText.test.ts` (delete) | F3 | F3 merged |
-| `src/three/OracleScene.tsx` (wire panel; Ball.tsx mount only if required) | F3 | F3 merged |
+| `src/three/useOracleChoreography.ts` | F4 | F4 merged |
+| `src/three/oracleChoreography.test.ts` (new) | F4 | F4 merged |
+| `src/three/OracleScene.tsx` (wire time/timeScale if needed) | F4 | F4 merged |
+| `src/three/AnswerPanel.tsx` (remove phase uniform overrides) | F4 | F4 merged |
+| `src/three/Ball.tsx` (oracleSceneTimeScale + hook wiring) | F4 | F4 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/components/OracleStage.tsx`,
 `src/components/MagikBall.tsx`, `vite.config.ts`, `src/index.css`, or any single `src/three/*` file at
@@ -105,10 +103,10 @@ once. Coordinator records ownership before spawning each phase.
 | Flag-off = today's behaviour | ✓ | F1 coordinator re-check |
 | 3D canvas never replaced by CSS during reveal | partial | F1 webgl e2e green; F5 strengthens assertion |
 | Ball reads as deep glossy 8-ball, not chrome | ✓ | F2 coordinator re-check + implementer visual |
-| Ink panel renders triangle + "8" rings + answer text inside lens | — | F3 acceptance |
+| Ink panel renders triangle + "8" rings + answer text inside lens | partial | F3 shipped; manual lens QA recommended |
 | Reveal = opacity fade (no rotation), `ANIMATION_DONE` dispatched | — | F4 acceptance |
 | `OracleErrorBoundary` swaps to CSS on runtime error | ✓ | F1 shipped |
-| Easter-egg amber tint visible | — | F3 acceptance |
+| Easter-egg amber tint visible | partial | F3 code path; manual easter-egg QA |
 | Lighthouse mobile (flag-off) | — | F5 |
 | Reduced-motion / no-WebGL fallback | — | F5 manual |
 | Lazy three chunk + workbox precache | — | F5 |
