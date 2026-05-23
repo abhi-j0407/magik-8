@@ -6,7 +6,7 @@ import {
   TextureLoader,
 } from 'three';
 
-export const ENV_MAP_PATH = '/env/studio.jpg';
+export const ENV_MAP_PATH = '/env/cywarr-env.jpg';
 
 /** Ambient-only + bundled equirect env (preloaded in OracleScene). */
 export function Lighting() {

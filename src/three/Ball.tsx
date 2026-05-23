@@ -19,7 +19,6 @@ import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
 import { AnswerPanel } from './AnswerPanel';
 import { ENV_MAP_PATH } from './Lighting';
-import { PACK_FLUID_ACCENTS, resolveM8Color } from './tokens';
 import { useOracleChoreography } from './useOracleChoreography';
 
 export const BALL_RADIUS = 1;
@@ -70,24 +69,6 @@ float fbm(vec3 x) {
 }
 `;
 
-function resolveStripeShadow(): string {
-  if (typeof document === 'undefined') return 'rgb(200, 198, 192)';
-  const el = document.createElement('span');
-  el.style.display = 'none';
-  el.style.color = 'var(--m8-stripe-shadow)';
-  document.documentElement.appendChild(el);
-  const resolved = getComputedStyle(el).color;
-  el.remove();
-  return resolved && resolved !== '' ? resolved : 'rgb(200, 198, 192)';
-}
-
-function shellColorForPack(packId: keyof typeof PACK_FLUID_ACCENTS): Color {
-  const core = new Color(resolveM8Color('sphereCore'));
-  const accent = new Color(PACK_FLUID_ACCENTS[packId].fluidMid);
-  core.lerp(accent, 0.4);
-  return core.addScalar(0.25).multiplyScalar(5);
-}
-
 function shiftSphereSurface(
   g: SphereGeometry,
   hole: boolean,
@@ -131,8 +112,8 @@ function buildSides(g: SphereGeometry): PlaneGeometry {
 function buildCywarrBallGeometry(R: number) {
   const g1 = new SphereGeometry(
     R,
-    128,
-    64,
+    200,
+    100,
     0,
     Math.PI * 2,
     Math.PI * 0.15,
@@ -142,7 +123,7 @@ function buildCywarrBallGeometry(R: number) {
   const g2 = g1.clone();
   g2.scale(0.9, 0.9, 0.9);
   const g3 = buildSides(g1);
-  const g4 = new SphereGeometry(R - 0.01, 128, 32, 0, Math.PI * 2, 0, Math.PI * 0.15);
+  const g4 = new SphereGeometry(R * 0.9975, 200, 25, 0, Math.PI * 2, 0, Math.PI * 0.15);
   return mergeGeometries([g1, g2, g3, g4], true);
 }
 
@@ -153,7 +134,7 @@ type BallProps = {
 };
 
 export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProps) {
-  const { packId, result } = useOracle();
+  const { result } = useOracle();
   const jitterRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
   const envTex = useLoader(TextureLoader, ENV_MAP_PATH) as Texture;
@@ -173,13 +154,9 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
   }, [envTex]);
 
   const materials = useMemo(() => {
-    const shellColor = shellColorForPack(packId);
-    const fluidDeep = new Color(resolveM8Color('fluidDeep'));
-    const stripeShadow = new Color(resolveStripeShadow());
-
     const shell = new MeshStandardMaterial({
       envMap: envTex,
-      color: shellColor,
+      color: new Color('indigo').addScalar(0.25).multiplyScalar(5),
       roughness: 0.75,
       metalness: 1,
     });
@@ -220,12 +197,12 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     };
 
     const cavity = new MeshLambertMaterial({
-      color: fluidDeep,
+      color: 0x000088,
       side: BackSide,
     });
 
     const sides = new MeshLambertMaterial({
-      color: stripeShadow,
+      color: 0xaa0000,
     });
     sides.defines = { USE_UV: '' };
     sides.onBeforeCompile = (shader) => {
@@ -265,7 +242,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     });
 
     return [shell, cavity, sides, lens];
-  }, [envTex, packId]);
+  }, [envTex]);
 
   useFrame((state) => {
     oracleSceneTime.value = state.clock.elapsedTime * oracleSceneTimeScale.value;
