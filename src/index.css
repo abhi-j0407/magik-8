@@ -390,3 +390,17 @@ body {
 .m8-share-status-err {
   color: var(--m8-danger);
 }
+
+/* WebGL stage — soft separation on transparent canvas (F1) */
+.m8-oracle-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.75;
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in oklch, var(--m8-fluid-deep) 40%, transparent) 0%,
+    transparent 70%
+  );
+}
