@@ -9,13 +9,16 @@ import {
   Vector3,
   type CanvasTexture,
 } from 'three';
-import { useOracle } from '../context/OracleContext';
-import { resolveM8Color } from './tokens';
 
 /** cywarr lens stack Y — 0.75 × ball radius (R=4 → 3.0; R=1 → 0.75). */
 export const LENS_TOP_Y = 0.75;
 
-const INK_STEP = 0.05;
+/** cywarr panel edge — 3.2 on R=4 → 0.8 on R=1. */
+export const ANSWER_PLANE_SIZE = 0.8;
+
+/** cywarr step 0.05 on R=4 → 0.0125 on R=1. */
+export const INK_STEP = 0.0125;
+
 const INSTANCE_COUNT = 4;
 
 const INK_FRAGMENT_REPLACE = `
@@ -48,7 +51,7 @@ col = mix(col, inkDiffuse, b);
 
 vec4 phraseTex = texture2D(text, vUv);
 float tx = phraseTex.a * textVisibility;
-col = mix(col, phraseTex.rgb * inkTextTint, tx);
+col = mix(col, phraseTex.rgb * vec3(1.0, 0.5, 0.0), tx);
 
 float f = max(b, tx);
 
@@ -56,18 +59,14 @@ diffuseColor.rgb = col;
 diffuseColor.a *= f;
 `;
 
-function cssColorToVec3(css: string, target: Vector3): Vector3 {
-  const c = new Color(css);
-  return target.set(c.r, c.g, c.b);
-}
-
 /** F4 tweens these refs — do not replace the object identity. */
 export const answerPanelUniforms = {
   baseVisibility: { value: 1 },
   textVisibility: { value: 0 },
   text: { value: null as CanvasTexture | null },
   isEasterEgg: { value: 0 },
-  inkTextTint: { value: new Vector3(0.95, 0.95, 0.93) },
+  /** Kept for F4 choreography API; text tint is cywarr orange in the fragment shader. */
+  inkTextTint: { value: new Vector3(1, 0.5, 0) },
   setText(texture: CanvasTexture | null) {
     this.text.value = texture;
     if (texture) texture.needsUpdate = true;
@@ -75,19 +74,16 @@ export const answerPanelUniforms = {
 };
 
 export function AnswerPanel() {
-  const { packId } = useOracle();
-
   const geometry = useMemo(() => {
-    const g = new PlaneGeometry(0.4, 0.4);
+    const g = new PlaneGeometry(ANSWER_PLANE_SIZE, ANSWER_PLANE_SIZE);
     g.rotateX(-Math.PI * 0.5);
     g.setAttribute('instId', new InstancedBufferAttribute(new Float32Array([0, 1, 2, 3]), 1));
     return g;
   }, []);
 
   const material = useMemo(() => {
-    const inkColor = new Color(resolveM8Color('fluidHi'));
     const mat = new MeshBasicMaterial({
-      color: inkColor,
+      color: new Color(0, 0.5, 1),
       transparent: true,
       opacity: 0.9,
       blending: AdditiveBlending,
@@ -98,7 +94,6 @@ export function AnswerPanel() {
       shader.uniforms.textVisibility = answerPanelUniforms.textVisibility;
       shader.uniforms.text = answerPanelUniforms.text;
       shader.uniforms.isEasterEgg = answerPanelUniforms.isEasterEgg;
-      shader.uniforms.inkTextTint = answerPanelUniforms.inkTextTint;
 
       shader.vertexShader = `
         attribute float instId;
@@ -116,7 +111,6 @@ export function AnswerPanel() {
         uniform float textVisibility;
         uniform sampler2D text;
         uniform float isEasterEgg;
-        uniform vec3 inkTextTint;
         varying float vInstId;
 
         float tri(vec2 uv, int N){
@@ -131,7 +125,7 @@ export function AnswerPanel() {
       `.replace('vec4 diffuseColor = vec4( diffuse, opacity );', INK_FRAGMENT_REPLACE);
     };
     return mat;
-  }, [packId]);
+  }, []);
 
   const meshRef = useRef<import('three').InstancedMesh>(null);
   const matrixScratch = useMemo(() => new Matrix4(), []);
@@ -145,14 +139,6 @@ export function AnswerPanel() {
     }
     mesh.instanceMatrix.needsUpdate = true;
   }, [matrixScratch]);
-
-  useEffect(() => {
-    cssColorToVec3(resolveM8Color('answerInk'), answerPanelUniforms.inkTextTint.value);
-  }, [packId]);
-
-  useEffect(() => {
-    material.color.set(resolveM8Color('fluidHi'));
-  }, [material, packId]);
 
   return (
     <instancedMesh

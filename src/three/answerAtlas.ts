@@ -26,7 +26,7 @@ export function wrapPhraseLines(text: string): string[] {
   return lines;
 }
 
-/** cywarr createTextures recipe — 256×256 canvas, Oswald/Courier, white on transparent. */
+/** cywarr createTextures recipe — 256×256 canvas, Courier, white on transparent. */
 export function createTextureForPhrase(text: string): CanvasTexture {
   const canvas = document.createElement('canvas');
   Object.assign(canvas.style, { fontSmooth: 'never' });
@@ -40,7 +40,7 @@ export function createTextureForPhrase(text: string): CanvasTexture {
   ctx.textBaseline = 'middle';
   const size = FONT_SIZE;
   const sizeRatio = 1;
-  ctx.font = `bold ${size}px 'Oswald','Courier New',sans-serif`;
+  ctx.font = `bold ${size}px 'Courier New'`;
 
   const phraseChunks = wrapPhraseLines(text);
   const startPoint = (phraseChunks.length - 1) * 0.5 * size * sizeRatio;
