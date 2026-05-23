@@ -48,6 +48,9 @@ Portfolio **case study narrative** lives on the user's main portfolio site (exte
 - [DESIGN-V2.md](./DESIGN-V2.md) — tokens, motion, components (canonical visual spec)
 - [DESIGN.md](./DESIGN.md) — V1 tokens (superseded; migration map in DESIGN-V2)
 - [COORDINATOR-DESIGN-V2-INTEGRATION.md](./COORDINATOR-DESIGN-V2-INTEGRATION.md) — D1–D8 playbook (complete)
+- [PLAN-VISUAL-V3.md](./PLAN-VISUAL-V3.md) — **active** 3D Oracle upgrade: phases G1–G9 + canonical 3D spec
+- [prompts/COORDINATOR-VISUAL-V3.md](./prompts/COORDINATOR-VISUAL-V3.md) — Visual V3 coordinator prompt + kickoff + per-phase template
+- [HANDOFF-VISUAL-V3.md](./HANDOFF-VISUAL-V3.md) — Visual V3 live status (current phase, locks, decisions)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — modules, state, file tree
 - [ANSWERS.md](./ANSWERS.md) — all theme copy (implement `src/data/answers.ts` from here)
 - [SENSORS.md](./SENSORS.md) — shake algorithm, permissions, QA matrix

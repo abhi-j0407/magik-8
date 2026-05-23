@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MagikBall } from './components/MagikBall';
+import { OracleStage } from './components/OracleStage';
 import { HUDStrip } from './components/HUDStrip';
 import { MuteToggle } from './components/MuteToggle';
 import { OracleAudioBridge } from './components/OracleAudioBridge';
@@ -69,7 +69,7 @@ function OracleScreen() {
         className="z-[1] flex w-full flex-1 flex-col items-center justify-center"
         aria-labelledby="oracle-instruction"
       >
-        <MagikBall />
+        <OracleStage />
       </section>
 
       {instruction && (

@@ -15,6 +15,19 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/.*(?:three|OracleScene|fiber|drei|postprocessing).*\.js$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'webgl-vendor-chunks',
+              expiration: {
+                maxEntries: 24,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Magik 8',
