@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { MagikBall } from '../components/MagikBall';
 import { useOracle } from '../context/OracleContext';
-import { getAnswerDisplayText } from './AnswerText';
+import { getAnswerDisplayText } from './answerAtlas';
 import { Background } from './Background';
 import { Ball } from './Ball';
 import { Effects } from './Effects';

@@ -17,7 +17,7 @@ import {
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
-import { AnswerWindow } from './AnswerWindow';
+import { AnswerPanel } from './AnswerPanel';
 import { ENV_MAP_PATH } from './Lighting';
 import { PACK_FLUID_ACCENTS, resolveM8Color } from './tokens';
 import { useOracleChoreography } from './useOracleChoreography';
@@ -269,7 +269,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
   return (
     <group>
       <mesh ref={meshRef} geometry={geometry} material={materials} renderOrder={9999} />
-      <AnswerWindow phase={phase} reducedMotion={reducedMotion} />
+      <AnswerPanel phase={phase} reducedMotion={reducedMotion} />
       {/* F4 replaces rotation choreography; hidden anchor keeps FSM reveal until then. */}
       <group ref={choreoRef} visible={false} />
     </group>
