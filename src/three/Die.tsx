@@ -1,9 +1,12 @@
-import { useMemo } from 'react';
+import gsap from 'gsap';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Group } from 'three';
 import { Color, IcosahedronGeometry, MeshStandardMaterial } from 'three';
 import type { OraclePhase } from '../types/oracle';
+import { REVEAL_MS } from './useOracleChoreography';
 import { resolveM8Color } from './tokens';
 
-/** Matches Ball.tsx — not exported from Ball to avoid G3 edits there. */
+/** Matches Ball.tsx BALL_RADIUS — local to avoid Ball↔Die import cycle. */
 const BALL_RADIUS = 1;
 
 /** Answer-window aperture — shared with AnswerWindow recess. */
@@ -17,15 +20,20 @@ const DIE_ORIENTATION: [number, number, number] = [
   0,
 ];
 
+const DIE_Z_SUNK = -0.24 - BALL_RADIUS * 0.02;
+const DIE_Z_SURFACED = 0.012;
+
 type DieProps = {
   phase: OraclePhase;
+  reducedMotion?: boolean;
 };
 
 function isWindowSettled(phase: OraclePhase): boolean {
   return phase === 'revealing' || phase === 'answered';
 }
 
-export function Die({ phase }: DieProps) {
+export function Die({ phase, reducedMotion = false }: DieProps) {
+  const groupRef = useRef<Group>(null);
   const settled = isWindowSettled(phase);
 
   const faceMaterial = useMemo(
@@ -52,11 +60,27 @@ export function Die({ phase }: DieProps) {
 
   const geometry = useMemo(() => new IcosahedronGeometry(DIE_RADIUS, 0), []);
 
-  // Sunk below liquid when idle/shaking; pressed to inner glass when revealing/answered.
-  const z = settled ? 0.012 : -0.24 - BALL_RADIUS * 0.02;
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return;
+
+    const targetZ = settled ? DIE_Z_SURFACED : DIE_Z_SUNK;
+    const duration = reducedMotion ? 0 : REVEAL_MS / 1000;
+
+    const tween = gsap.to(group.position, {
+      z: targetZ,
+      duration,
+      ease: 'cubic-bezier(0.16, 0.8, 0.3, 1)',
+      overwrite: true,
+    });
+
+    return () => {
+      tween.kill();
+    };
+  }, [settled, reducedMotion]);
 
   return (
-    <group position={[0, 0, z]} rotation={DIE_ORIENTATION}>
+    <group ref={groupRef} position={[0, 0, settled ? DIE_Z_SURFACED : DIE_Z_SUNK]} rotation={DIE_ORIENTATION}>
       <mesh geometry={geometry} material={bodyMaterial} />
       {/* Placeholder triangular answer facet — G6 adds Text on this face */}
       <mesh position={[0, 0, DIE_RADIUS * 0.92]} material={faceMaterial}>

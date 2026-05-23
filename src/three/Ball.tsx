@@ -1,4 +1,4 @@
-import { useFrame } from '@react-three/fiber';
+import { Float } from '@react-three/drei';
 import { useMemo, useRef } from 'react';
 import type { Group } from 'three';
 import {
@@ -9,9 +9,14 @@ import {
   SRGBColorSpace,
 } from 'three';
 import type { OraclePhase } from '../types/oracle';
+import { AnswerWindow } from './AnswerWindow';
 import { resolveM8Color } from './tokens';
+import {
+  isEightDiscVisible,
+  useOracleChoreography,
+} from './useOracleChoreography';
 
-const BALL_RADIUS = 1;
+export const BALL_RADIUS = 1;
 const SEGMENTS = 64;
 /** Front (+Z) disc — matches CSS MagikBall ~18% from top. */
 const EIGHT_DISC_Y = 0.36;
@@ -62,13 +67,20 @@ export function createEightDiscTexture(): CanvasTexture {
 
 type BallProps = {
   phase: OraclePhase;
+  onAnimationDone: () => void;
+  reducedMotion?: boolean;
 };
 
-export function Ball({ phase }: BallProps) {
+export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProps) {
   const groupRef = useRef<Group>(null);
+
+  useOracleChoreography(groupRef, { phase, onAnimationDone, reducedMotion });
 
   const ballColor = useMemo(() => new Color(resolveM8Color('sphereCore')), []);
   const eightTexture = useMemo(() => createEightDiscTexture(), []);
+  const showEight = isEightDiscVisible(phase);
+  const floatEnabled =
+    (phase === 'idle' || phase === 'answered') && !reducedMotion;
 
   const ballMaterial = useMemo(
     () =>
@@ -98,40 +110,29 @@ export function Ball({ phase }: BallProps) {
     [eightTexture],
   );
 
-  useFrame((_, delta) => {
-    const group = groupRef.current;
-    if (!group) return;
-
-    if (phase === 'shaking') {
-      group.rotation.x += delta * 9;
-      group.rotation.y += delta * 7;
-      group.rotation.z += delta * 5;
-      return;
-    }
-
-    if (phase === 'revealing' || phase === 'answered') {
-      group.rotation.x *= 0.88;
-      group.rotation.y *= 0.88;
-      group.rotation.z *= 0.88;
-      return;
-    }
-
-    group.rotation.y += delta * 0.35;
-    group.position.y = Math.sin(performance.now() * 0.0015) * 0.06;
-  });
-
   return (
     <group ref={groupRef}>
-      <mesh material={ballMaterial}>
-        <sphereGeometry args={[BALL_RADIUS, SEGMENTS, SEGMENTS]} />
-      </mesh>
-      <mesh
-        position={[0, EIGHT_DISC_Y, EIGHT_DISC_Z + EIGHT_EMBOSSED_OFFSET]}
-        material={discMaterial}
-        renderOrder={2}
+      <Float
+        speed={phase === 'answered' ? 1.6 : 1.15}
+        rotationIntensity={0}
+        floatIntensity={phase === 'answered' ? 0.06 : 0.1}
+        floatingRange={[-0.035, 0.035]}
+        enabled={floatEnabled}
       >
-        <circleGeometry args={[EIGHT_DISC_RADIUS, 64]} />
-      </mesh>
+        <mesh material={ballMaterial}>
+          <sphereGeometry args={[BALL_RADIUS, SEGMENTS, SEGMENTS]} />
+        </mesh>
+        {showEight && (
+          <mesh
+            position={[0, EIGHT_DISC_Y, EIGHT_DISC_Z + EIGHT_EMBOSSED_OFFSET]}
+            material={discMaterial}
+            renderOrder={2}
+          >
+            <circleGeometry args={[EIGHT_DISC_RADIUS, 64]} />
+          </mesh>
+        )}
+        <AnswerWindow phase={phase} reducedMotion={reducedMotion} />
+      </Float>
     </group>
   );
 }

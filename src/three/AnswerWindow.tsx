@@ -6,7 +6,7 @@ import { Die } from './Die';
 import { Liquid } from './Liquid';
 import { resolveM8Color } from './tokens';
 
-/** Matches Ball.tsx BALL_RADIUS — duplicated to avoid editing Ball in G3. */
+/** Matches Ball.tsx BALL_RADIUS — local to avoid Ball↔AnswerWindow import cycle. */
 const BALL_RADIUS = 1;
 
 /**
@@ -25,13 +25,14 @@ const LIQUID_DEPTH = 0.12;
 
 type AnswerWindowProps = {
   phase: OraclePhase;
+  reducedMotion?: boolean;
 };
 
 function isWindowVisible(phase: OraclePhase): boolean {
   return phase === 'revealing' || phase === 'answered';
 }
 
-export function AnswerWindow({ phase }: AnswerWindowProps) {
+export function AnswerWindow({ phase, reducedMotion = false }: AnswerWindowProps) {
   const visible = isWindowVisible(phase);
   const rotation = visible ? ROT_SETTLED : ROT_HIDDEN;
 
@@ -63,7 +64,7 @@ export function AnswerWindow({ phase }: AnswerWindowProps) {
 
       <Liquid phase={phase} radius={WINDOW_RADIUS} depth={LIQUID_DEPTH} />
 
-      <Die phase={phase} />
+      <Die phase={phase} reducedMotion={reducedMotion} />
 
       {/* Glass disc — toward camera when settled (+Z local after π Y rotation) */}
       <mesh position={[0, 0, GLASS_OFFSET]} renderOrder={10}>

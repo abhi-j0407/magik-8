@@ -2,14 +2,15 @@ import { ContactShadows } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { useOracle } from '../context/OracleContext';
-import { AnswerWindow } from './AnswerWindow';
 import { Ball } from './Ball';
 import { Lighting } from './Lighting';
+import { useWebglCapability } from './useWebglCapability';
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
 function OracleCanvas() {
-  const { phase } = useOracle();
+  const { phase, onAnimationDone } = useOracle();
+  const { prefersReducedMotion } = useWebglCapability();
 
   return (
     <Canvas
@@ -25,10 +26,11 @@ function OracleCanvas() {
     >
       <color attach="background" args={['transparent']} />
       <Lighting />
-      <group>
-        <Ball phase={phase} />
-        <AnswerWindow phase={phase} />
-      </group>
+      <Ball
+        phase={phase}
+        onAnimationDone={onAnimationDone}
+        reducedMotion={prefersReducedMotion}
+      />
       <ContactShadows
         position={[0, -1.02, 0]}
         opacity={0.6}
