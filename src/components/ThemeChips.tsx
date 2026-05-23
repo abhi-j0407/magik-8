@@ -8,7 +8,7 @@ export function ThemeChips() {
 
   return (
     <div
-      className="flex w-full max-w-md gap-2 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="mx-auto flex w-full max-w-md justify-center gap-2 overflow-x-auto px-1 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       role="tablist"
       aria-label="Answer theme"
     >

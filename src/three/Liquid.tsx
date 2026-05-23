@@ -1,8 +1,9 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Color, DoubleSide, MeshStandardMaterial, ShaderMaterial } from 'three';
+import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
-import { resolveM8Color } from './tokens';
+import { PACK_FLUID_ACCENTS, resolveM8Color } from './tokens';
 import liquidFrag from './shaders/liquid.frag?raw';
 import liquidVert from './shaders/liquid.vert?raw';
 
@@ -28,6 +29,7 @@ type LiquidProps = {
 };
 
 export function Liquid({ phase, radius, depth }: LiquidProps) {
+  const { packId } = useOracle();
   const sloshRef = useRef(0);
   const bobRef = useRef(0);
 
@@ -72,6 +74,18 @@ export function Liquid({ phase, radius, depth }: LiquidProps) {
       }),
     [fluidMeniscus],
   );
+
+  useEffect(() => {
+    const accent = PACK_FLUID_ACCENTS[packId];
+    fluidDeep.set(accent.fluidDeep);
+    fluidMid.set(accent.fluidMid);
+    fluidMeniscus.set(accent.fluidMeniscus);
+    liquidMaterial.uniforms.uColorDeep.value.copy(fluidDeep);
+    liquidMaterial.uniforms.uColorMid.value.copy(fluidMid);
+    liquidMaterial.uniforms.uColorMeniscus.value.copy(fluidMeniscus);
+    meniscusMaterial.color.copy(fluidMeniscus);
+    meniscusMaterial.emissive.copy(fluidMeniscus);
+  }, [packId, fluidDeep, fluidMid, fluidMeniscus, liquidMaterial, meniscusMaterial]);
 
   useFrame((state, delta) => {
     const targetSlosh = SLOSH_TARGET[phase];

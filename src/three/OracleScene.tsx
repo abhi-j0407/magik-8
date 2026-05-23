@@ -22,8 +22,12 @@ function OracleCanvas() {
       gl={{
         antialias: true,
         alpha: true,
+        preserveDrawingBuffer: true,
         toneMapping: ACESFilmicToneMapping,
         outputColorSpace: SRGBColorSpace,
+      }}
+      onCreated={({ gl }) => {
+        gl.domElement.setAttribute('data-m8-oracle-canvas', '');
       }}
       style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
     >

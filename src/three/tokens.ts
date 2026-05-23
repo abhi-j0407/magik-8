@@ -3,6 +3,46 @@
  * Resolves CSS custom properties to computed sRGB for Three.js materials.
  */
 
+import type { ThemePack } from '../types/oracle';
+
+/** Subtle liquid / backdrop / rim accents per theme pack (plan §5.7). */
+export const PACK_FLUID_ACCENTS: Record<
+  ThemePack['id'],
+  {
+    fluidDeep: string;
+    fluidMid: string;
+    fluidMeniscus: string;
+    bgDeep: string;
+    bgMid: string;
+    rimLight: string;
+  }
+> = {
+  classic: {
+    fluidDeep: 'oklch(18% 0.150 262)',
+    fluidMid: 'oklch(30% 0.170 258)',
+    fluidMeniscus: 'oklch(72% 0.110 240)',
+    bgDeep: 'oklch(18% 0.150 262)',
+    bgMid: 'oklch(30% 0.170 258)',
+    rimLight: '#c8d4e8',
+  },
+  career: {
+    fluidDeep: 'oklch(17% 0.12 235)',
+    fluidMid: 'oklch(28% 0.14 232)',
+    fluidMeniscus: 'oklch(70% 0.09 228)',
+    bgDeep: 'oklch(16% 0.10 235)',
+    bgMid: 'oklch(26% 0.12 232)',
+    rimLight: '#b8d4e4',
+  },
+  party: {
+    fluidDeep: 'oklch(19% 0.16 295)',
+    fluidMid: 'oklch(32% 0.18 290)',
+    fluidMeniscus: 'oklch(74% 0.12 285)',
+    bgDeep: 'oklch(17% 0.14 295)',
+    bgMid: 'oklch(30% 0.16 290)',
+    rimLight: '#d4c8f0',
+  },
+};
+
 export const M8_CSS_VARS = {
   bg: '--m8-bg',
   sphereRim: '--m8-sphere-rim',
