@@ -2,7 +2,7 @@
 id: handoff-visual-v3
 version: 1.0.0
 status: active
-current_phase: G5
+current_phase: G6
 webgl_flag: off (default until G9 sign-off)
 deploy_url: null
 ---
@@ -17,23 +17,26 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — G4
+## Handoff — G5
 **Status:** complete
-**Agent:** G4 implementer
-**Branch / PR:** merged to `main` @ cb7407b (squash; remote `phase/g4-liquid` deleted)
+**Agent:** G5 implementer
+**Branch / PR:** merged to `main` @ 2bac659 (squash; remote `phase/g5-motion` deleted)
 **Changed:**
-- src/three/Liquid.tsx — animated liquid + meniscus, phase slosh/bob uniforms
-- src/three/shaders/liquid.vert, liquid.frag — displacement, token colors, fresnel
-- src/three/AnswerWindow.tsx — static cylinders replaced with Liquid; glass/Die/recess preserved
-**Verified:** tsc ✓ · build ✓ · test ✓ (45) · e2e ✓ (3) · /code-review ✓ · visual ✓ (manual flag-on)
-**Acceptance:** §5.2 fluid tokens; animated surface + idle bob; meniscus; slosh on shake, damp on reveal/answered; flag-off green; mobile-friendly segments
-**Integration:** Liquid exports phase/radius/depth; uniforms uSlosh/uBob/uTime; slosh accumulates while window hidden during shaking; G5 drives rotation + ANIMATION_DONE
-**Next:** G5 — GSAP reveal + Float idle + 8-to-window rotation + ANIMATION_DONE
+- src/three/useOracleChoreography.ts — GSAP/useFrame/Float; REVEAL_MS=600; onAnimationDone
+- src/three/Ball.tsx — AnswerWindow in groupRef; BALL_RADIUS export; hide "8" on reveal
+- src/three/Die.tsx — GSAP Z sink/surface on phase
+- src/three/OracleScene.tsx — onAnimationDone + reducedMotion wiring
+- src/three/AnswerWindow.tsx — reducedMotion passed to Die
+**Verified:** tsc ✓ · build ✓ · test ✓ (45) · e2e ✓ (3) · /code-review ✓ · visual ✓
+**Acceptance:** §5.6 mapped; ANIMATION_DONE at reveal end; unified tumble; flag-off unchanged; reduced-motion shortens tumble
+**Integration:** useOracleChoreography(groupRef, { phase, onAnimationDone, reducedMotion }); settled rotation.y=π; REVEAL_MS=600 SHAKE_DURATION_MS=400 exported
+**Next:** G6 — die-face Text behind glass, auto-fit longest answer
 **Blockers:** none
 **Notes for next agent:**
-- Slosh sim runs during hidden shaking so reveal opens with energy — intentional
-- Phase-only slosh v1; optional useShake amplitude later
-- Export WINDOW_RADIUS/LIQUID_DEPTH if G5 needs; dispose ShaderMaterial on hot remount
+- Window −Z anchor + ROT_SETTLED πY; ball y=π faces window to camera
+- G6: drei Text on Die facet; keep aria-live on DOM (AnswerTriangle path / add WebGL sr-only if needed)
+- Slosh during hidden shake intentional (G4)
+- BALL_RADIUS exported from Ball; Die uses local const=1 (import-cycle guard)
 ```
 
 ## Phase checklist
@@ -42,7 +45,7 @@ deploy_url: null
 - [x] **G2** — The ball (glossy `MeshPhysicalMaterial`, HDRI `<Environment>`, key+rim lights, `<ContactShadows>`, "8" disc) — *fixes defect 2, 6*
 - [x] **G3** — Window mechanism (glass + cobalt liquid + d20 die + triangular answer face, settled) — *fixes defect 3, 5, 6*
 - [x] **G4** — Liquid & bob (animated surface shader, meniscus, shake-driven slosh)
-- [ ] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
+- [x] **G5** — Motion choreography (GSAP reveal + `<Float>` idle + "8"→window rotation; dispatch `ANIMATION_DONE`)
 - [ ] **G6** — Text behind glass (die-face `Text`/`Text3D`, auto-fit/wrap, amber easter-egg) — *fixes defect 4*
 - [ ] **G7** — Backdrop & post (mesh-gradient bg, Bloom/CA/Vignette/Noise) — *∥ after G2*
 - [ ] **G8** — Chrome & integration (center modes, share-card WebGL capture, theme retint) — *fixes defect 1, ∥ after G1*
@@ -52,8 +55,8 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/useOracleChoreography.ts` | G5 | G5 merged |
-| `src/three/Ball.tsx`, `Die.tsx`, `OracleScene.tsx` | G5 | G5 merged |
+| `src/three/AnswerText.tsx` | G6 | G6 merged |
+| `src/three/Die.tsx`, `AnswerWindow.tsx` | G6 | G6 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`, or `src/index.css` at once.
 
@@ -66,7 +69,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 | `@react-three/drei` | 10.7.7 | helpers |
 | `@react-three/postprocessing` | 3.0.4 | effects (unused until G7) |
 | `postprocessing` | 6.39.1 | peer |
-| `gsap` | 3.15.0 | reveal timeline (unused until G5) |
+| `gsap` | 3.15.0 | G5 choreography |
 
 ## Decisions log (frozen unless user changes)
 
@@ -94,7 +97,7 @@ Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/App.tsx`
 |-------|------|-------|
 | Flag-off = today's behavior | yes | G1 — e2e 3/3, Vitest 45/45 |
 | Ball separated from bg | yes | G2 — rim + HDRI + ContactShadows |
-| Window centered on reveal | partial | G3 static settled; G5 choreography |
+| Window centered on reveal | yes | G5 — GSAP rotate to dead-center |
 | Liquid sloshes / settles | yes | G4 — shader slosh + settle |
 | Text behind glass, fits longest answer | — | G6 |
 | Modes centered | — | G8 |
