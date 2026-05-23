@@ -10,10 +10,26 @@ import {
   wrapPhraseLines,
 } from './answerAtlas';
 
-function installCanvasDocument(): void {
+function installCanvasDocument(): { lastFont: { current: string } } {
+  const lastFont = { current: '' };
   const createCanvas = () => {
     let w = 0;
     let h = 0;
+    const ctx = {
+      clearRect: vi.fn(),
+      fillText: vi.fn(),
+      textAlign: 'center',
+      textBaseline: 'middle',
+      fillStyle: '#fff',
+      font: '',
+    };
+    Object.defineProperty(ctx, 'font', {
+      get: () => lastFont.current,
+      set: (v: string) => {
+        lastFont.current = v;
+      },
+      configurable: true,
+    });
     return {
       style: {} as CSSStyleDeclaration,
       get width() {
@@ -28,14 +44,7 @@ function installCanvasDocument(): void {
       set height(v: number) {
         h = v;
       },
-      getContext: () => ({
-        clearRect: vi.fn(),
-        fillText: vi.fn(),
-        textAlign: 'center',
-        textBaseline: 'middle',
-        fillStyle: '#fff',
-        font: '',
-      }),
+      getContext: () => ctx,
     };
   };
 
@@ -45,6 +54,7 @@ function installCanvasDocument(): void {
       return createCanvas();
     },
   });
+  return { lastFont };
 }
 
 function allAnswerStrings(): string[] {
@@ -55,8 +65,10 @@ function allAnswerStrings(): string[] {
 }
 
 describe('answerAtlas', () => {
+  let lastFont: { current: string };
+
   beforeEach(() => {
-    installCanvasDocument();
+    ({ lastFont } = installCanvasDocument());
     __resetAnswerAtlasForTests();
     __buildAnswerAtlasForTests();
   });
@@ -90,6 +102,13 @@ describe('answerAtlas', () => {
     const tex = createTextureForPhrase('Yes');
     expect(tex.image.width).toBe(256);
     expect(tex.image.height).toBe(256);
+  });
+
+  it('uses cywarr Courier New font (no Oswald)', () => {
+    __resetAnswerAtlasForTests();
+    createTextureForPhrase('Yes');
+    expect(lastFont.current).toBe("bold 30px 'Courier New'");
+    expect(lastFont.current).not.toMatch(/Oswald/i);
   });
 });
 
