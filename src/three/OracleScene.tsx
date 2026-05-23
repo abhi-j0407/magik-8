@@ -1,11 +1,10 @@
-import { AdaptiveDpr, ContactShadows, OrbitControls } from '@react-three/drei';
+import { AdaptiveDpr, OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader } from '@react-three/fiber';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { MagikBall } from '../components/MagikBall';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './answerAtlas';
-import { Background } from './Background';
 import { Ball } from './Ball';
 import { Effects } from './Effects';
 import { ENV_MAP_PATH, Lighting } from './Lighting';
@@ -32,6 +31,9 @@ function useCoarsePointer() {
 
 const CAM_POS = new Vector3(0, 1, 0.375).setLength(3.75);
 
+/** Euclidean px — orbit drag must not fire shake/reset (plan F1). */
+const ORBIT_DRAG_THRESHOLD_PX = 8;
+
 type OracleCanvasProps = {
   canvasKey: number;
   onContextLost: () => void;
@@ -39,17 +41,14 @@ type OracleCanvasProps = {
 };
 
 function SceneControls() {
-  const { phase } = useOracle();
-  const orbitEnabled = phase === 'idle' || phase === 'answered';
-
   return (
     <OrbitControls
-      enabled={orbitEnabled}
+      enabled
       enableDamping
       enablePan={false}
       enableZoom={false}
-      minPolarAngle={Math.PI * 0.2}
-      maxPolarAngle={Math.PI * 0.55}
+      minPolarAngle={0}
+      maxPolarAngle={Math.PI}
     />
   );
 }
@@ -114,22 +113,11 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
     >
       <SceneControls />
       <AdaptiveDpr pixelated />
-      <color attach="background" args={['transparent']} />
-      <Background />
       <Lighting />
       <Ball
         phase={phase}
         onAnimationDone={onAnimationDone}
         reducedMotion={prefersReducedMotion}
-      />
-      <ContactShadows
-        position={[0, -1.02, 0]}
-        opacity={0.6}
-        scale={10}
-        blur={2.8}
-        far={1.15}
-        resolution={256}
-        color="#000000"
       />
       <Effects />
     </Canvas>
@@ -154,8 +142,30 @@ export function OracleScene() {
   const [canvasKey, setCanvasKey] = useState(0);
   const answered = phase === 'answered';
   const busy = phase === 'shaking' || phase === 'revealing';
+  const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    pointerStart.current = { x: event.clientX, y: event.clientY };
+    suppressClickRef.current = false;
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const start = pointerStart.current;
+    if (!start) return;
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.hypot(dx, dy) > ORBIT_DRAG_THRESHOLD_PX) {
+      suppressClickRef.current = true;
+    }
+    pointerStart.current = null;
+  };
 
   const handleBallClick = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
     if (answered) reset();
     else shakeOrTap();
   };
@@ -175,16 +185,22 @@ export function OracleScene() {
 
   return (
     <div className="relative mx-auto" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
+      <div className="m8-oracle-glow" aria-hidden="true" />
       <OracleAnswerLiveRegion />
       <button
         type="button"
-        className="relative block h-full w-full cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-(--m8-fluid-hi)"
+        className="relative z-1 block h-full w-full cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-(--m8-fluid-hi)"
         aria-label={
           answered
             ? 'Magik 8 ball — tap to ask again'
             : 'Magik 8 ball — tap or shake to reveal'
         }
         disabled={busy}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={() => {
+          pointerStart.current = null;
+        }}
         onClick={handleBallClick}
       >
         <OracleCanvas
