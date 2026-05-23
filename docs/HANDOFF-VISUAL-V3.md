@@ -1,9 +1,9 @@
 ---
 id: handoff-visual-v3
 version: 1.0.0
-status: active
-current_phase: G9
-webgl_flag: off (G9 sign-off — keep default false until product enables via env)
+status: complete
+current_phase: done
+webgl_flag: off (G9 sign-off — enable via VITE_WEBGL=true in Vercel when product opts in)
 deploy_url: null
 ---
 
@@ -20,7 +20,7 @@ deploy_url: null
 ## Handoff — G9
 **Status:** complete
 **Agent:** G9 implementer
-**Branch / PR:** phase/g9-qa — (PR URL after `gh pr create`)
+**Branch / PR:** merged to `main` @ 10293f0 (squash; remote `phase/g9-qa` deleted)
 **Changed:**
 - OracleScene: AdaptiveDpr, DPR 1–1.5, visibility frameloop demand, preserveDrawingBuffer documented
 - AnswerText: self-hosted `/fonts/oswald-600.woff2`
@@ -34,7 +34,7 @@ deploy_url: null
 **Next:** overseer deploy only (per DEPLOY-VERCEL.md)
 **Blockers:** none
 **Notes for next agent:**
-- Lighthouse (flag-off preview): perf 92 · a11y 100 · best-practices 100 · PWA n/a on http preview (B-04)
+- Lighthouse (flag-off preview): perf 92–95 · a11y 100 · best-practices 100 · PWA n/a on http preview (B-04); coordinator verify 95/100/100 @ 10293f0
 - DPR: Canvas `[1, 1.5]` + `<AdaptiveDpr pixelated />`; tab hidden → `frameloop="demand"`
 - Offline: `dist/hdri/studio_small_08_1k.hdr`, `dist/fonts/oswald-600.woff2` in SW precache
 - preserveDrawingBuffer: kept true for share capture (WebGL-only); no flag-off Lighthouse impact
@@ -105,7 +105,7 @@ npm run build       ✓ (precache includes hdri + fonts)
 npm test            ✓ 56 passed
 npm run test:e2e    ✓ 5 passed (3 flag-off + 2 flag-on)
 npm run test:lighthouse ✓
-  performance: 92 (threshold ≥85)
+  performance: 92–95 (threshold ≥85; coordinator run: 95)
   accessibility: 100 (≥95)
   best-practices: 100 (≥90)
   pwa: not scored on http://127.0.0.1 preview (see BACKLOG B-04)
