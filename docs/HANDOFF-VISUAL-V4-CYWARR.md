@@ -21,7 +21,7 @@ deploy_url: null
 ## Handoff — F5
 **Status:** complete
 **Agent:** F5 implementer
-**Branch / PR:** fix/v4-f5-wrapup — (open PR)
+**Branch / PR:** fix/v4-f5-wrapup — merged to main (0e6bafa)
 **Changed:**
 - package.json / package-lock.json — removed @react-three/postprocessing + postprocessing
 - vite.config.ts — dropped postprocessing from webgl-vendor-chunks pattern
@@ -29,7 +29,7 @@ deploy_url: null
 - scripts/lighthouse.mjs — flag-off perf ≥85 + flag-on (VITE_WEBGL=true) perf ≥75 baselines
 - docs/PLAN-VISUAL-V3.md, docs/HANDOFF-VISUAL-V3.md — superseded_by V4
 - docs/PLAN-VISUAL-V4-CYWARR.md — status complete
-**Verified:** tsc ✓ · build ✓ · test ✓ (64) · e2e best-effort (smoke 3 + webgl 2) · lighthouse ✓ · flag-off ✓
+**Verified:** tsc ✓ · build ✓ · test ✓ (64) · e2e ✓ (5) coordinator re-check · lighthouse ✓ · flag-off ✓
 **Acceptance:** no postprocessing deps; drei trimmed to AdaptiveDpr/ContactShadows/OrbitControls; DPR capped; V3 docs superseded; orphan imports none in src
 **Integration:** V4 port complete — prod still VITE_WEBGL unset until manual QA
 **Next:** none — overseer deploy + optional VITE_WEBGL prod flip
