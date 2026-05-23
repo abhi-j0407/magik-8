@@ -1,9 +1,12 @@
 ---
 id: plan-visual-v4-cywarr
 version: 1.0.0
-status: complete
+status: superseded
+superseded_by: PLAN-VISUAL-V5-CYWARR-FIDELITY
 supersedes_render_layer: PLAN-VISUAL-V3 (rotate-to-reveal d20 + transmission glass + sloshing liquid)
 ---
+
+> **Superseded** by [`PLAN-VISUAL-V5-CYWARR-FIDELITY.md`](./PLAN-VISUAL-V5-CYWARR-FIDELITY.md) — V5 fixes the V4 render layer (white box, chrome ball, weak shake). Historical reference only.
 
 # Plan — Visual V4 ("cywarr Port")
 

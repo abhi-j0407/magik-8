@@ -1,11 +1,14 @@
 ---
 id: handoff-visual-v4-cywarr
 version: 1.0.0
-status: complete
+status: superseded
+superseded_by: PLAN-VISUAL-V5-CYWARR-FIDELITY
 current_phase: F5
 webgl_flag: off (enable via VITE_WEBGL=true after manual flag-on QA — see § webgl_flag sign-off)
 deploy_url: null
 ---
+
+> **Superseded** by [`HANDOFF-VISUAL-V5-CYWARR-FIDELITY.md`](./HANDOFF-VISUAL-V5-CYWARR-FIDELITY.md) — active track is V5 cywarr ball fidelity.
 
 # Handoff — Visual V4 ("cywarr Port") Live Status
 
