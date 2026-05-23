@@ -20,7 +20,7 @@ deploy_url: null
 ## Handoff — G2
 **Status:** complete
 **Agent:** G2 implementer
-**Branch / PR:** phase/g2-ball — https://github.com/abhi-j0407/magik-8/pull/new/phase/g2-ball
+**Branch / PR:** merged to `main` @ daf174d (squash; remote `phase/g2-ball` deleted)
 **Changed:**
 - src/three/Ball.tsx — MeshPhysicalMaterial sphere + procedural embossed "8" disc
 - src/three/Lighting.tsx — HDRI Environment + key (upper-left) + rim back light
