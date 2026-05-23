@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   canShareFiles,
   getShareAnswerText,
+  getShareBallRectFallback,
+  isWebglShareCaptureEnabled,
+  SHARE_BALL_SIZE,
   SHARE_CARD_HEIGHT,
   SHARE_CARD_WIDTH,
 } from './shareExport';
@@ -75,5 +78,33 @@ describe('share card dimensions', () => {
   it('uses story aspect 1080×1920', () => {
     expect(SHARE_CARD_WIDTH).toBe(1080);
     expect(SHARE_CARD_HEIGHT).toBe(1920);
+  });
+
+  it('uses 620px ball slot matching ShareCard', () => {
+    expect(SHARE_BALL_SIZE).toBe(620);
+  });
+});
+
+describe('isWebglShareCaptureEnabled', () => {
+  it('is false when VITE_WEBGL is unset', () => {
+    vi.stubEnv('VITE_WEBGL', undefined);
+    expect(isWebglShareCaptureEnabled()).toBe(false);
+  });
+
+  it('is true when VITE_WEBGL=true', () => {
+    vi.stubEnv('VITE_WEBGL', 'true');
+    expect(isWebglShareCaptureEnabled()).toBe(true);
+  });
+});
+
+describe('getShareBallRectFallback', () => {
+  it('centers 620px ball on the story card', () => {
+    const rect = getShareBallRectFallback();
+    expect(rect).toEqual({
+      x: 230,
+      y: 570,
+      width: SHARE_BALL_SIZE,
+      height: SHARE_BALL_SIZE,
+    });
   });
 });

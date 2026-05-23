@@ -4,17 +4,23 @@ import { AnswerTriangle } from './AnswerTriangle';
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
-export function MagikBall() {
+type MagikBallProps = {
+  /** Transient WebGL load / error / context-loss fallback — no interaction. */
+  renderingLocked?: boolean;
+};
+
+export function MagikBall({ renderingLocked = false }: MagikBallProps) {
   const { phase, shakeOrTap, reset } = useOracle();
   const reducedMotion = useReducedMotion();
 
   const isShaking = phase === 'shaking';
   const hideEight = phase === 'revealing' || phase === 'answered';
-  const idleFloat = phase === 'idle';
+  const idleFloat = phase === 'idle' && !renderingLocked;
   const busy = phase === 'shaking' || phase === 'revealing';
   const answered = phase === 'answered';
 
   const handleBallClick = () => {
+    if (renderingLocked) return;
     if (answered) reset();
     else shakeOrTap();
   };
@@ -29,18 +35,20 @@ export function MagikBall() {
             ? 'Magik 8 ball — tap to ask again'
             : 'Magik 8 ball — tap or shake to reveal'
         }
-        disabled={busy}
+        disabled={busy || renderingLocked}
         onClick={handleBallClick}
         animate={
-          reducedMotion
-            ? isShaking
-              ? { opacity: [1, 0.85, 1] }
-              : { opacity: 1 }
-            : isShaking
-              ? { rotate: [-8, 7, -6, 5, 0] }
-              : idleFloat
-                ? { y: [0, -6, 0] }
-                : { y: 0 }
+          renderingLocked
+            ? { opacity: 0.55 }
+            : reducedMotion
+              ? isShaking
+                ? { opacity: [1, 0.85, 1] }
+                : { opacity: 1 }
+              : isShaking
+                ? { rotate: [-8, 7, -6, 5, 0] }
+                : idleFloat
+                  ? { y: [0, -6, 0] }
+                  : { y: 0 }
         }
         transition={
           isShaking

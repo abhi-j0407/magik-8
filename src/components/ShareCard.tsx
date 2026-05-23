@@ -1,5 +1,9 @@
 import { forwardRef, type CSSProperties } from 'react';
-import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from '../lib/shareExport';
+import {
+  SHARE_BALL_SIZE,
+  SHARE_CARD_HEIGHT,
+  SHARE_CARD_WIDTH,
+} from '../lib/shareExport';
 
 export type ShareCardProps = {
   answerText: string;
@@ -159,9 +163,12 @@ function BallCrop({
   answerText: string;
   isEasterEgg: boolean;
 }) {
-  const SIZE = 620;
+  const SIZE = SHARE_BALL_SIZE;
   return (
-    <div style={{ width: SIZE, height: SIZE, position: 'relative' }}>
+    <div
+      data-m8-share-ball-slot
+      style={{ width: SIZE, height: SIZE, position: 'relative' }}
+    >
       <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', overflow: 'hidden' }}>
         <div
           style={{

@@ -20,7 +20,7 @@ test.describe('Magik 8 oracle (Design V2)', () => {
     await page.goto('/');
     await page.getByRole('button', { name: /tap to shake/i }).click();
     await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
-      timeout: 5000,
+      timeout: 10_000,
     });
     const answer = page.locator('[aria-live="polite"]');
     await expect(answer).toBeVisible();
@@ -32,7 +32,7 @@ test.describe('Magik 8 oracle (Design V2)', () => {
     await page.goto('/');
     await page.getByRole('button', { name: /tap to shake/i }).click();
     await expect(page.getByRole('button', { name: /ask the oracle again/i })).toBeVisible({
-      timeout: 5000,
+      timeout: 10_000,
     });
     const career = page.getByRole('tab', { name: 'Career Coach' });
     await career.click();

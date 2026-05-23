@@ -15,7 +15,9 @@ All specs live in [`docs/`](./docs/). **Start:** [`docs/README.md`](./docs/READM
 
 ## Status
 
-**Design V2 complete (D1–D8)** — core ritual, sensors, polish, share/PWA, and Claude Design integration. Automated QA: Vitest (45) · Playwright (3) · Lighthouse mobile (perf 95, a11y 100). **Next:** overseer deploy (Vercel) — see [`docs/HANDOFF.md`](./docs/HANDOFF.md).
+**Design V2 complete (D1–D8)** — core ritual, sensors, polish, share/PWA. Automated QA: Vitest (45) · Playwright (3) · Lighthouse mobile (`npm run test:lighthouse`). **Production deploy:** personal Vercel team [abhij0407s-projects](https://vercel.com/abhij0407s-projects) — follow **[`docs/DEPLOY-VERCEL.md`](./docs/DEPLOY-VERCEL.md)** (dashboard); then paste prod URL into [`HANDOFF`](./docs/HANDOFF.md) `deploy_url`.
+
+**Git:** `main` pushed to GitHub. Prefer SSH remote: `git@github.com:abhi-j0407/magik-8.git` (HTTPS can hit wrong cached credentials).
 
 Design reference pack (archived): [`magik-8_CLAUDE_DESIGN/`](./magik-8_CLAUDE_DESIGN/).
 

@@ -24,7 +24,7 @@ Mobile-first PWA **Magik 8**: faithful Magic-8-Ball-style ritual (ask → shake 
 | 4 | Polish | `DESIGN-V2.md` § Audio, `PRD.md` § REQ-040–060 | 2 |
 | 5 | PWA/Share | `PRD.md` § REQ-050, `ARCHITECTURE.md` § PWA | 2 |
 | 6 | QA | `SENSORS.md` § Matrix, `PRD.md` § Acceptance | 2 |
-| Ship | Overseer | `HANDOFF.md` § Deploy | 1 |
+| Ship | Overseer | [`HANDOFF.md`](./HANDOFF.md) § Deploy, [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md) | 2 |
 
 **Source of truth hierarchy:** `PRD.md` (requirements) → domain docs (`ANSWERS`, `SENSORS`, `DESIGN-V2`) → `HANDOFF.md` (runtime status).
 
@@ -48,6 +48,10 @@ Portfolio **case study narrative** lives on the user's main portfolio site (exte
 - [DESIGN-V2.md](./DESIGN-V2.md) — tokens, motion, components (canonical visual spec)
 - [DESIGN.md](./DESIGN.md) — V1 tokens (superseded; migration map in DESIGN-V2)
 - [COORDINATOR-DESIGN-V2-INTEGRATION.md](./COORDINATOR-DESIGN-V2-INTEGRATION.md) — D1–D8 playbook (complete)
+- [PLAN-VISUAL-V3.md](./PLAN-VISUAL-V3.md) — **active** 3D Oracle upgrade: phases G1–G9 + canonical 3D spec
+- [prompts/COORDINATOR-VISUAL-V3.md](./prompts/COORDINATOR-VISUAL-V3.md) — Visual V3 coordinator prompt + kickoff + per-phase template
+- [HANDOFF-VISUAL-V3.md](./HANDOFF-VISUAL-V3.md) — Visual V3 live status (current phase, locks, decisions)
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — modules, state, file tree
 - [ANSWERS.md](./ANSWERS.md) — all theme copy (implement `src/data/answers.ts` from here)
 - [SENSORS.md](./SENSORS.md) — shake algorithm, permissions, QA matrix
+- [DEPLOY-VERCEL.md](./DEPLOY-VERCEL.md) — Vercel dashboard deploy (personal team **abhij0407s-projects**), branch `main`

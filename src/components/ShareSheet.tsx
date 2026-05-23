@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useOracle } from '../context/OracleContext';
 import {
-  captureShareCard,
+  captureShareCardForExport,
   getShareAnswerText,
   shareOrDownloadPng,
 } from '../lib/shareExport';
@@ -21,7 +21,7 @@ export function ShareSheet() {
     setBusy(true);
     setStatus('idle');
     try {
-      const blob = await captureShareCard(cardRef.current);
+      const blob = await captureShareCardForExport(cardRef.current);
       const outcome = await shareOrDownloadPng(blob, `magik-8-${Date.now()}.png`);
       setStatus(outcome);
     } catch {

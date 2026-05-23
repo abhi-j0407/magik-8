@@ -1,6 +1,6 @@
-# Backlog — non-blockers (PHASE-6)
+# Backlog — non-blockers
 
-Items deferred from QA; not required for ship.
+After **production HTTPS** deploy (Vercel — see [`DEPLOY-VERCEL.md`](./DEPLOY-VERCEL.md)), run device checks on **prod URL** (shake/motion/audio needs HTTPS).
 
 | ID | Area | Item | Priority |
 |----|------|------|----------|
