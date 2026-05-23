@@ -2,7 +2,7 @@
 id: handoff-visual-v4-cywarr
 version: 1.0.0
 status: active
-current_phase: F2
+current_phase: F3
 webgl_flag: off (user enables via VITE_WEBGL=true once F4 lands and visual QA passes)
 deploy_url: null
 ---
@@ -18,38 +18,34 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F1
+## Handoff — F2
 **Status:** complete (squash-merged to main)
-**Agent:** F1 implementer
-**Branch / PR:** fix/v4-f1-suspense — merged to main (1db3548)
+**Agent:** F2 implementer
+**Branch / PR:** fix/v4-f2-cywarr-port — merged to main (ef356e4)
 **Changed:**
-- public/env/studio.jpg — bundled equirect env (~51 KB)
-- public/hdri/README.md — deleted
-- src/three/Lighting.tsx — TextureLoader env, no drei Environment; exports ENV_MAP_PATH
-- src/three/OracleScene.tsx — env preload, context-loss/restore, locked fallback
-- src/three/AnswerText.tsx — stub (no troika suspend)
-- src/three/AnswerWindow.tsx — meshStandard glass cap (temp)
-- src/three/useWebglCapability.ts + .test.ts — relaxed probe + SwiftShader tests
-- src/components/OracleStage.tsx — Suspense + boundary
-- src/components/OracleErrorBoundary.tsx — new class boundary
-- src/components/MagikBall.tsx — renderingLocked prop
-- vite.config.ts — workbox jpg precache + /env/ runtime cache
+- src/three/Ball.tsx — cywarr merged shell + FBM/sine shaders, oracleSceneTime export, no eight decal
+- src/three/Lighting.tsx — ambient-only + ENV_MAP_PATH export
+- src/three/Background.tsx — simplex-4D noise sky sphere + pack tint
+- src/three/Effects.tsx — postprocessing removed (returns null)
+- src/three/OracleScene.tsx — cywarr camera, OrbitControls, exposure 1.0
+- src/three/shaders/gradient.{frag,vert} — deleted
+- scripts/generate-eight-texture.mjs — deleted
 **Verified:** tsc ✓ · build ✓ · test ✓ (59) · e2e ✓ (5) · coordinator re-check ✓ · flag-off regression ✓ · visual ✓ (webgl e2e)
-**Acceptance:** F1 plan row met — no HDR/Text/transmission suspend; JPG env preload; error boundary; context-loss fallback; renderingLocked; relaxed WebGL probe; workbox updated; flag-off unchanged
-**Integration:** F2 reuses ENV_MAP_PATH + useLoader.preload pattern; OracleErrorBoundary + renderingLocked API; context-loss remount via canvasKey; AnswerWindow glass already uses cywarr cap params
-**Next:** F2 — cywarr ball geometry, camera, lighting, backdrop
+**Acceptance:** F2 plan row — partial-sphere + lens cap, FBM shimmer, ambient + JPG env, noise backdrop, no directionals/post/Bloom, no eight decal, camera/controls per spec, group does not spin
+**Integration:** oracleSceneTime in Ball.tsx ({ value: number }); F4 tweens timeScale on same ref. ENV_MAP_PATH from Lighting. OrbitControls when phase idle/answered. AnswerWindow still inside Ball until F3.
+**Next:** F3 — Answer ink panel + stylised "8"
 **Blockers:** none
 **Notes for next agent:**
-- studio.jpg ~51 KB (Poly Haven studio_small_08, 1k equirect)
-- Preload at OracleScene module top; Lighting sets scene.environment on mount
-- Brief locked CSS ball only during lazy OracleScene chunk load (expected)
-- F2 must branch from latest main (F1 squash-merged)
+- Ball mesh static; choreography on hidden child group until F4
+- Replace AnswerWindow with AnswerPanel; delete Die/Liquid/AnswerText
+- isEightDiscVisible stays in useOracleChoreography until F4
+- Export ink uniform singleton for F4 (baseVisibility, textVisibility, setText)
 ```
 
 ## Phase checklist
 
 - [x] **F1** — Kill the Suspense fallback paths *(drop drei Environment + Text + transmission, error boundary, context-loss listener, relax capability probe, `renderingLocked` CSS prop)*
-- [ ] **F2** — cywarr ball geometry, camera, lighting, backdrop *(partial-sphere shell + lens cap, FBM shimmer, simplex-noise sky, ambient + equirect JPG)*
+- [x] **F2** — cywarr ball geometry, camera, lighting, backdrop *(partial-sphere shell + lens cap, FBM shimmer, simplex-noise sky, ambient + equirect JPG)*
 - [ ] **F3** — Answer ink panel + stylised "8" *(4 instanced quads, triangle + 2 rings SDF, CanvasTexture phrase atlas, easter-egg amber)*
 - [ ] **F4** — Opacity reveal choreography *(no rotation; baseVisibility + textVisibility tweens; timeScale shake)*
 - [ ] **F5** — Deletes, deps, verification, docs *(remove postprocessing if unused, DPR cap, e2e + lighthouse, supersede V3 docs)*
@@ -58,13 +54,11 @@ deploy_url: null
 
 | File area | Owner | Until |
 |-----------|-------|-------|
-| `src/three/Ball.tsx` | F2 | F2 merged |
-| `src/three/Lighting.tsx` | F2 | F2 merged |
-| `src/three/Background.tsx` | F2 | F2 merged |
-| `src/three/Effects.tsx` | F2 | F2 merged |
-| `src/three/OracleScene.tsx` | F2 | F2 merged |
-| `src/three/shaders/gradient.{frag,vert}` (delete) | F2 | F2 merged |
-| `scripts/generate-eight-texture.mjs` (delete) | F2 | F2 merged |
+| `src/three/answerAtlas.ts` + `.test.ts` (new) | F3 | F3 merged |
+| `src/three/AnswerPanel.tsx` (new) | F3 | F3 merged |
+| `src/three/AnswerWindow.tsx`, `Die.tsx`, `Liquid.tsx`, `AnswerText.tsx` (delete) | F3 | F3 merged |
+| `src/three/shaders/liquid.{frag,vert}`, `answerText.test.ts` (delete) | F3 | F3 merged |
+| `src/three/OracleScene.tsx` (wire panel; Ball.tsx mount only if required) | F3 | F3 merged |
 
 Shared-file rule: never two agents on `src/three/OracleScene.tsx`, `src/components/OracleStage.tsx`,
 `src/components/MagikBall.tsx`, `vite.config.ts`, `src/index.css`, or any single `src/three/*` file at
@@ -74,7 +68,7 @@ once. Coordinator records ownership before spawning each phase.
 
 | Package | Pinned | Notes |
 |---------|--------|-------|
-| `three` | 0.184.0 (current) | Confirm during F2 if any peer-bump needed |
+| `three` | 0.184.0 (current) | Confirmed F2 — BufferGeometryUtils.mergeGeometries |
 | `@react-three/fiber` | 9.6.1 (current) | Stays — required for `<Canvas>` |
 | `@react-three/drei` | 10.7.7 (current) | Trimmed: only `AdaptiveDpr`, `ContactShadows`, optional `OrbitControls` |
 | `@react-three/postprocessing` | 3.0.4 (current) | **Removed in F5** if Effects.tsx no longer uses it |
@@ -110,7 +104,7 @@ once. Coordinator records ownership before spawning each phase.
 |-------|------|-------|
 | Flag-off = today's behaviour | ✓ | F1 coordinator re-check |
 | 3D canvas never replaced by CSS during reveal | partial | F1 webgl e2e green; F5 strengthens assertion |
-| Ball reads as deep glossy 8-ball, not chrome | — | F2 acceptance |
+| Ball reads as deep glossy 8-ball, not chrome | ✓ | F2 coordinator re-check + implementer visual |
 | Ink panel renders triangle + "8" rings + answer text inside lens | — | F3 acceptance |
 | Reveal = opacity fade (no rotation), `ANIMATION_DONE` dispatched | — | F4 acceptance |
 | `OracleErrorBoundary` swaps to CSS on runtime error | ✓ | F1 shipped |
