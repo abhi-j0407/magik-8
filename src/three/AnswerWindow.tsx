@@ -1,9 +1,16 @@
-import { MeshTransmissionMaterial } from '@react-three/drei';
-import { useMemo } from 'react';
-import { Color, MeshStandardMaterial } from 'three';
+import { useLoader } from '@react-three/fiber';
+import { useEffect, useMemo } from 'react';
+import {
+  Color,
+  EquirectangularReflectionMapping,
+  MeshStandardMaterial,
+  SRGBColorSpace,
+  TextureLoader,
+} from 'three';
 import type { OraclePhase } from '../types/oracle';
 import { Die } from './Die';
 import { Liquid } from './Liquid';
+import { ENV_MAP_PATH } from './Lighting';
 import { resolveM8Color } from './tokens';
 
 /** Matches Ball.tsx BALL_RADIUS — local to avoid Ball↔AnswerWindow import cycle. */
@@ -35,8 +42,12 @@ function isWindowVisible(phase: OraclePhase): boolean {
 export function AnswerWindow({ phase, reducedMotion = false }: AnswerWindowProps) {
   const visible = isWindowVisible(phase);
   const rotation = visible ? ROT_SETTLED : ROT_HIDDEN;
+  const envMap = useLoader(TextureLoader, ENV_MAP_PATH);
 
-  const glassTint = useMemo(() => new Color(resolveM8Color('fluidDeep')), []);
+  useEffect(() => {
+    envMap.colorSpace = SRGBColorSpace;
+    envMap.mapping = EquirectangularReflectionMapping;
+  }, [envMap]);
 
   const recessMaterial = useMemo(
     () =>
@@ -46,6 +57,20 @@ export function AnswerWindow({ phase, reducedMotion = false }: AnswerWindowProps
         metalness: 0,
       }),
     [],
+  );
+
+  const glassMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        envMap,
+        envMapIntensity: 10,
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.25,
+        metalness: 1,
+        roughness: 0,
+      }),
+    [envMap],
   );
 
   return (
@@ -66,23 +91,9 @@ export function AnswerWindow({ phase, reducedMotion = false }: AnswerWindowProps
 
       <Die phase={phase} reducedMotion={reducedMotion} />
 
-      {/* Glass disc — toward camera when settled (+Z local after π Y rotation) */}
-      <mesh position={[0, 0, GLASS_OFFSET]} renderOrder={10}>
+      {/* Temporary cywarr-style lens cap until F2/F3 */}
+      <mesh position={[0, 0, GLASS_OFFSET]} renderOrder={10} material={glassMaterial}>
         <circleGeometry args={[WINDOW_RADIUS, 64]} />
-        <MeshTransmissionMaterial
-          transmission={1}
-          roughness={0.06}
-          thickness={0.8}
-          ior={1.45}
-          chromaticAberration={0.03}
-          distortion={0.1}
-          distortionScale={0.2}
-          temporalDistortion={0.1}
-          samples={6}
-          resolution={512}
-          backside
-          color={glassTint}
-        />
       </mesh>
     </group>
   );

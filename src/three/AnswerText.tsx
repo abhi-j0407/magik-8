@@ -1,14 +1,7 @@
-import { Text } from '@react-three/drei';
-import { useMemo } from 'react';
-import { Color } from 'three';
 import type { OraclePhase, OracleResult } from '../types/oracle';
-import { resolveM8Color } from './tokens';
 
 /** Answer-window aperture on die face — keep in sync with AnswerWindow recess. */
 export const DIE_WINDOW_RADIUS = 0.26;
-
-/** Oswald 600 — self-hosted; matches `--m8-font-answer` in index.css (G9 workbox precache). */
-const ANSWER_FONT = '/fonts/oswald-600.woff2';
 
 /** Longest pack strings (career / party / easter eggs) must fit inside the triangular facet. */
 export const ANSWER_TEXT_MAX_WIDTH = DIE_WINDOW_RADIUS * 1.48;
@@ -40,51 +33,9 @@ type AnswerTextProps = {
   z?: number;
 };
 
-function isWindowSettled(phase: OraclePhase): boolean {
-  return phase === 'revealing' || phase === 'answered';
+/** F1 stub — F3 replaces with cywarr ink panel (no troika / drei Text suspend). */
+export function AnswerText(_props: AnswerTextProps) {
+  return null;
 }
 
-export function AnswerText({
-  text,
-  isEasterEgg,
-  phase,
-  z = 0.128,
-}: AnswerTextProps) {
-  const settled = isWindowSettled(phase);
-  const showText = settled && phase === 'answered';
-  const display = useMemo(() => text.toUpperCase(), [text]);
-  const fontSize = useMemo(() => computeAnswerFontSize(text), [text]);
-
-  const ink = useMemo(() => new Color(resolveM8Color('answerInk')), []);
-  const amber = useMemo(() => new Color(resolveM8Color('amber')), []);
-  const glow = useMemo(() => new Color(resolveM8Color('answerGlow')), []);
-
-  const fill = isEasterEgg ? amber : ink;
-  const outline = isEasterEgg ? amber : glow;
-
-  if (!showText) return null;
-
-  return (
-    <Text
-      position={[0, 0, z]}
-      font={ANSWER_FONT}
-      fontSize={fontSize}
-      maxWidth={ANSWER_TEXT_MAX_WIDTH}
-      lineHeight={0.92}
-      letterSpacing={0.018}
-      textAlign="center"
-      anchorX="center"
-      anchorY="middle"
-      color={fill}
-      fillOpacity={1}
-      outlineWidth={0.012}
-      outlineColor={outline}
-      outlineOpacity={isEasterEgg ? 0.55 : 0.42}
-      overflowWrap="break-word"
-      renderOrder={5}
-      depthOffset={-0.002}
-    >
-      {display}
-    </Text>
-  );
-}
+export default AnswerText;

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { MagikBall } from './MagikBall';
+import { OracleErrorBoundary } from './OracleErrorBoundary';
 import { useWebglCapability } from '../three/useWebglCapability';
 
 const OracleScene = lazy(() => import('../three/OracleScene'));
@@ -20,8 +21,10 @@ export function OracleStage() {
   }
 
   return (
-    <Suspense fallback={<MagikBall />}>
-      <OracleScene />
+    <Suspense fallback={<MagikBall renderingLocked />}>
+      <OracleErrorBoundary>
+        <OracleScene />
+      </OracleErrorBoundary>
     </Suspense>
   );
 }

@@ -21,7 +21,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,ttf,hdr}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,woff,woff2,ttf}'],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/.*(?:three|OracleScene|fiber|drei|postprocessing).*\.js$/i,
@@ -35,10 +35,10 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\/hdri\/.*\.hdr$/i,
+            urlPattern: /\/env\/.*\.jpg$/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'oracle-hdri',
+              cacheName: 'oracle-env',
               ...cacheFirstYear,
             },
           },

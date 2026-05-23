@@ -1,14 +1,17 @@
 import { AdaptiveDpr, ContactShadows } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useLoader } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
-import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
+import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader } from 'three';
+import { MagikBall } from '../components/MagikBall';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './AnswerText';
 import { Background } from './Background';
 import { Ball } from './Ball';
 import { Effects } from './Effects';
-import { Lighting } from './Lighting';
+import { ENV_MAP_PATH, Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
+
+useLoader.preload(TextureLoader, ENV_MAP_PATH);
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
@@ -16,7 +19,13 @@ const BALL_SIZE = 'min(70vh, 360px)';
 const DPR_MIN = 1;
 const DPR_MAX = 1.5;
 
-function OracleCanvas() {
+type OracleCanvasProps = {
+  canvasKey: number;
+  onContextLost: () => void;
+  onContextRestored: () => void;
+};
+
+function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCanvasProps) {
   const { phase, onAnimationDone } = useOracle();
   const { prefersReducedMotion } = useWebglCapability();
   const [frameloop, setFrameloop] = useState<'always' | 'demand'>('always');
@@ -30,6 +39,7 @@ function OracleCanvas() {
 
   return (
     <Canvas
+      key={canvasKey}
       camera={{ position: [0, 0, 2.8], fov: 42 }}
       dpr={[DPR_MIN, DPR_MAX]}
       frameloop={frameloop}
@@ -43,6 +53,22 @@ function OracleCanvas() {
       }}
       onCreated={({ gl }) => {
         gl.domElement.setAttribute('data-m8-oracle-canvas', '');
+
+        const onLost = (event: Event) => {
+          event.preventDefault();
+          onContextLost();
+        };
+        const onRestored = () => {
+          onContextRestored();
+        };
+
+        gl.domElement.addEventListener('webglcontextlost', onLost);
+        gl.domElement.addEventListener('webglcontextrestored', onRestored);
+
+        return () => {
+          gl.domElement.removeEventListener('webglcontextlost', onLost);
+          gl.domElement.removeEventListener('webglcontextrestored', onRestored);
+        };
       }}
       style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
     >
@@ -83,6 +109,8 @@ function OracleAnswerLiveRegion() {
 
 export function OracleScene() {
   const { phase, shakeOrTap, reset } = useOracle();
+  const [contextLost, setContextLost] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
   const answered = phase === 'answered';
   const busy = phase === 'shaking' || phase === 'revealing';
 
@@ -90,6 +118,19 @@ export function OracleScene() {
     if (answered) reset();
     else shakeOrTap();
   };
+
+  const handleContextRestored = () => {
+    setContextLost(false);
+    setCanvasKey((k) => k + 1);
+  };
+
+  if (contextLost) {
+    return (
+      <div className="relative mx-auto" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
+        <MagikBall renderingLocked />
+      </div>
+    );
+  }
 
   return (
     <div className="relative mx-auto" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
@@ -105,7 +146,11 @@ export function OracleScene() {
         disabled={busy}
         onClick={handleBallClick}
       >
-        <OracleCanvas />
+        <OracleCanvas
+          canvasKey={canvasKey}
+          onContextLost={() => setContextLost(true)}
+          onContextRestored={handleContextRestored}
+        />
       </button>
     </div>
   );

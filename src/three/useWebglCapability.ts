@@ -1,17 +1,28 @@
 import { useEffect, useState } from 'react';
 
+const SWIFT_SHADER_RE = /SwiftShader|llvmpipe/i;
+
 /** Fail-closed WebGL1/2 probe (detached canvas, context released immediately). */
 export function detectWebGL(): boolean {
   if (typeof document === 'undefined') return false;
   try {
     const canvas = document.createElement('canvas');
     const gl =
-      canvas.getContext('webgl2', { failIfMajorPerformanceCaveat: true }) ??
-      canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true }) ??
-      canvas.getContext('experimental-webgl' as 'webgl', {
-        failIfMajorPerformanceCaveat: true,
-      });
+      canvas.getContext('webgl2') ??
+      canvas.getContext('webgl') ??
+      canvas.getContext('experimental-webgl' as 'webgl');
     if (!gl) return false;
+
+    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+    if (debugInfo) {
+      const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) as string;
+      if (SWIFT_SHADER_RE.test(renderer)) {
+        const lose = gl.getExtension('WEBGL_lose_context');
+        lose?.loseContext();
+        return false;
+      }
+    }
+
     const lose = gl.getExtension('WEBGL_lose_context');
     lose?.loseContext();
     return true;
@@ -21,15 +32,11 @@ export function detectWebGL(): boolean {
 }
 
 /**
- * Low-power heuristic: ≤2 logical cores or ≤2 GiB device memory (when exposed).
- * Documented in HANDOFF-VISUAL-V3 — keeps WebGL off constrained phones.
+ * Low-power heuristic: ≤2 logical cores (when exposed).
  */
 export function detectLowPower(nav: Navigator = typeof navigator !== 'undefined' ? navigator : ({} as Navigator)): boolean {
   const cores = nav.hardwareConcurrency ?? 8;
-  const memory = (nav as Navigator & { deviceMemory?: number }).deviceMemory;
-  if (cores <= 2) return true;
-  if (memory !== undefined && memory <= 2) return true;
-  return false;
+  return cores <= 2;
 }
 
 export type WebglCapability = {
