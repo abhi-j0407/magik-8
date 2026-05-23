@@ -2,6 +2,7 @@ import { ContactShadows } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, SRGBColorSpace } from 'three';
 import { useOracle } from '../context/OracleContext';
+import { getAnswerDisplayText } from './AnswerText';
 import { Ball } from './Ball';
 import { Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
@@ -44,6 +45,18 @@ function OracleCanvas() {
   );
 }
 
+function OracleAnswerLiveRegion() {
+  const { phase, result } = useOracle();
+  const answerText = getAnswerDisplayText(result ?? null);
+  if (phase !== 'answered' || !answerText) return null;
+
+  return (
+    <span className="sr-only" aria-live="polite" aria-atomic="true">
+      {answerText}
+    </span>
+  );
+}
+
 export function OracleScene() {
   const { phase, shakeOrTap, reset } = useOracle();
   const answered = phase === 'answered';
@@ -56,6 +69,7 @@ export function OracleScene() {
 
   return (
     <div className="relative mx-auto" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
+      <OracleAnswerLiveRegion />
       <button
         type="button"
         className="relative block h-full w-full cursor-pointer rounded-full border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-[6px] focus-visible:outline-(--m8-fluid-hi)"

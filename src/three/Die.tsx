@@ -2,15 +2,16 @@ import gsap from 'gsap';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Group } from 'three';
 import { Color, IcosahedronGeometry, MeshStandardMaterial } from 'three';
+import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
+import { AnswerText, DIE_WINDOW_RADIUS, getAnswerDisplayText } from './AnswerText';
 import { REVEAL_MS } from './useOracleChoreography';
 import { resolveM8Color } from './tokens';
 
 /** Matches Ball.tsx BALL_RADIUS — local to avoid Ball↔Die import cycle. */
 const BALL_RADIUS = 1;
 
-/** Answer-window aperture — shared with AnswerWindow recess. */
-export const DIE_WINDOW_RADIUS = 0.26;
+export { DIE_WINDOW_RADIUS };
 
 const DIE_RADIUS = 0.14;
 /** One icosahedron face normal toward +Z (glass / camera). */
@@ -33,8 +34,11 @@ function isWindowSettled(phase: OraclePhase): boolean {
 }
 
 export function Die({ phase, reducedMotion = false }: DieProps) {
+  const { result } = useOracle();
   const groupRef = useRef<Group>(null);
   const settled = isWindowSettled(phase);
+  const answerText = getAnswerDisplayText(result ?? null);
+  const isEasterEgg = result?.isEasterEgg ?? false;
 
   const faceMaterial = useMemo(
     () =>
@@ -82,10 +86,17 @@ export function Die({ phase, reducedMotion = false }: DieProps) {
   return (
     <group ref={groupRef} position={[0, 0, settled ? DIE_Z_SURFACED : DIE_Z_SUNK]} rotation={DIE_ORIENTATION}>
       <mesh geometry={geometry} material={bodyMaterial} />
-      {/* Placeholder triangular answer facet — G6 adds Text on this face */}
-      <mesh position={[0, 0, DIE_RADIUS * 0.92]} material={faceMaterial}>
+      <mesh position={[0, 0, DIE_RADIUS * 0.92]} material={faceMaterial} renderOrder={4}>
         <circleGeometry args={[DIE_WINDOW_RADIUS * 0.72, 3]} />
       </mesh>
+      {answerText && (
+        <AnswerText
+          text={answerText}
+          isEasterEgg={isEasterEgg}
+          phase={phase}
+          z={DIE_RADIUS * 0.94}
+        />
+      )}
     </group>
   );
 }
