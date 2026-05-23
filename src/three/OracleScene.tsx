@@ -15,9 +15,20 @@ useLoader.preload(TextureLoader, ENV_MAP_PATH);
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
-/** Mobile DPR clamp — AdaptiveDpr may lower further under load. */
+/** DPR floor — AdaptiveDpr may lower further under load. */
 const DPR_MIN = 1;
-const DPR_MAX = 1.5;
+
+function useCoarsePointer() {
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)');
+    const update = () => setCoarse(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return coarse;
+}
 
 const CAM_POS = new Vector3(0, 1, 0.375).setLength(3.75);
 
@@ -46,6 +57,8 @@ function SceneControls() {
 function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCanvasProps) {
   const { phase, onAnimationDone } = useOracle();
   const { prefersReducedMotion } = useWebglCapability();
+  const coarsePointer = useCoarsePointer();
+  const dprMax = coarsePointer ? 1.25 : 1.5;
   const [frameloop, setFrameloop] = useState<'always' | 'demand'>('always');
   const camera = useMemo(
     () => ({
@@ -68,7 +81,7 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
     <Canvas
       key={canvasKey}
       camera={camera}
-      dpr={[DPR_MIN, DPR_MAX]}
+      dpr={[DPR_MIN, dprMax]}
       frameloop={frameloop}
       gl={{
         antialias: true,

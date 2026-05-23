@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Path B — `VITE_WEBGL=true` + `VITE_WEBGL_E2E=true` build (playwright `chromium-webgl`).
  * Skips when headless Chrome cannot create a WebGL context (some CI images).
- * Uses bottom CTA for tap (Oracle `<Float>` idle bob makes the ball button unstable for Playwright).
+ * Uses bottom CTA for tap (Oracle idle bob makes the ball button unstable for Playwright).
  */
 test.describe('Magik 8 oracle (WebGL path)', () => {
   test.beforeEach(async ({ page }) => {

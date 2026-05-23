@@ -1,11 +1,14 @@
 ---
 id: handoff-visual-v3
 version: 1.0.0
-status: complete
+status: superseded
+superseded_by: HANDOFF-VISUAL-V4-CYWARR
 current_phase: done
 webgl_flag: off (G9 sign-off — enable via VITE_WEBGL=true in Vercel when product opts in)
 deploy_url: null
 ---
+
+> **Superseded by** [`HANDOFF-VISUAL-V4-CYWARR.md`](./HANDOFF-VISUAL-V4-CYWARR.md) — V4 cywarr render layer replaced V3.
 
 # Handoff — Visual V3 ("3D Oracle") Live Status
 

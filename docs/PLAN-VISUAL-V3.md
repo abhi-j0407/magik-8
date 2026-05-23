@@ -1,9 +1,12 @@
 ---
 id: plan-visual-v3
 version: 1.0.0
-status: active
+status: superseded
+superseded_by: PLAN-VISUAL-V4-CYWARR
 supersedes_render_layer: DESIGN-V2 (CSS ball + SVG triangle)
 ---
+
+> **Superseded by** [`PLAN-VISUAL-V4-CYWARR.md`](./PLAN-VISUAL-V4-CYWARR.md) (cywarr port, F5 complete).
 
 # Plan — Visual V3 ("3D Oracle")
 

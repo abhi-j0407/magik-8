@@ -7,8 +7,8 @@ const host = '127.0.0.1';
 const port = 4173;
 const url = `http://${host}:${port}/`;
 
-/** Repo baseline (HANDOFF.md D7, PRODUCT.md) — flag-off default build. */
-const THRESHOLDS = {
+/** Flag-off default build (HANDOFF D7). */
+const THRESHOLDS_FLAG_OFF = {
   performance: 85,
   accessibility: 95,
   'best-practices': 90,
@@ -16,13 +16,32 @@ const THRESHOLDS = {
   pwa: 0,
 };
 
-function run(cmd, args, inherit = false) {
+/**
+ * Flag-on WebGL build — OracleScene lazy chunk ~1 MB minified; local mobile LH ~50–65.
+ * Floor only (prod keeps VITE_WEBGL off). F5 measured 52 on headless mobile emulation.
+ */
+const THRESHOLDS_FLAG_ON = {
+  performance: 50,
+  accessibility: 95,
+  'best-practices': 90,
+  pwa: 0,
+};
+
+const runs = [
+  { label: 'flag-off', env: {}, thresholds: THRESHOLDS_FLAG_OFF },
+  { label: 'flag-on', env: { VITE_WEBGL: 'true' }, thresholds: THRESHOLDS_FLAG_ON },
+];
+
+function run(cmd, args, env = process.env) {
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
-      stdio: inherit ? 'inherit' : ['ignore', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
       shell: true,
+      env: { ...process.env, ...env },
     });
-    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`))));
+    child.on('exit', (code) =>
+      code === 0 ? resolve() : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`)),
+    );
   });
 }
 
@@ -47,9 +66,9 @@ async function waitForServer(maxMs = 30_000) {
   throw new Error(`Preview server did not respond at ${url}`);
 }
 
-function checkThresholds(scores) {
+function checkThresholds(scores, thresholds) {
   const failures = [];
-  for (const [category, minimum] of Object.entries(THRESHOLDS)) {
+  for (const [category, minimum] of Object.entries(thresholds)) {
     const score = scores[category];
     if (score === undefined) continue;
     if (score < minimum) {
@@ -59,14 +78,7 @@ function checkThresholds(scores) {
   return failures;
 }
 
-let preview;
-let exitCode = 0;
-
-try {
-  await run('npm', ['run', 'build']);
-  preview = runPreview();
-  preview.stderr?.on('data', () => {});
-  await waitForServer();
+async function auditOnce(thresholds) {
   const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless', '--no-sandbox'] });
   const result = await lighthouse(url, {
     port: chrome.port,
@@ -79,15 +91,31 @@ try {
   const scores = Object.fromEntries(
     Object.entries(result.lhr.categories).map(([id, cat]) => [id, Math.round((cat.score ?? 0) * 100)]),
   );
-  console.log(JSON.stringify({ url, scores, thresholds: THRESHOLDS }, null, 2));
+  return scores;
+}
 
-  const failures = checkThresholds(scores);
-  if (failures.length > 0) {
-    console.error('Lighthouse thresholds not met:\n' + failures.map((f) => `  - ${f}`).join('\n'));
-    exitCode = 1;
+let exitCode = 0;
+
+for (const { label, env, thresholds } of runs) {
+  let preview;
+  try {
+    await run('npm', ['run', 'build'], env);
+    preview = runPreview();
+    preview.stderr?.on('data', () => {});
+    await waitForServer();
+
+    const scores = await auditOnce(thresholds);
+    console.log(JSON.stringify({ label, url, scores, thresholds }, null, 2));
+
+    const failures = checkThresholds(scores, thresholds);
+    if (failures.length > 0) {
+      console.error(`Lighthouse (${label}) thresholds not met:\n` + failures.map((f) => `  - ${f}`).join('\n'));
+      exitCode = 1;
+    }
+  } finally {
+    preview?.kill('SIGTERM');
+    await delay(600);
   }
-} finally {
-  preview?.kill('SIGTERM');
 }
 
 process.exit(exitCode);

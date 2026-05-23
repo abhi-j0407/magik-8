@@ -24,7 +24,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,woff,woff2,ttf}'],
         runtimeCaching: [
           {
-            urlPattern: /\/assets\/.*(?:three|OracleScene|fiber|drei|postprocessing).*\.js$/i,
+            urlPattern: /\/assets\/.*(?:three|OracleScene|fiber|drei).*\.js$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'webgl-vendor-chunks',
