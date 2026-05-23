@@ -1,68 +1,149 @@
-import { Float } from '@react-three/drei';
-import { useMemo, useRef } from 'react';
-import type { Group } from 'three';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Group, Mesh, Texture } from 'three';
 import {
-  CanvasTexture,
+  BackSide,
   Color,
-  DoubleSide,
-  MeshPhysicalMaterial,
+  EquirectangularReflectionMapping,
+  MeshLambertMaterial,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  SphereGeometry,
+  Spherical,
   SRGBColorSpace,
+  TextureLoader,
+  Vector3,
 } from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
 import { AnswerWindow } from './AnswerWindow';
-import { resolveM8Color } from './tokens';
-import {
-  isEightDiscVisible,
-  useOracleChoreography,
-} from './useOracleChoreography';
+import { ENV_MAP_PATH } from './Lighting';
+import { PACK_FLUID_ACCENTS, resolveM8Color } from './tokens';
+import { useOracleChoreography } from './useOracleChoreography';
 
 export const BALL_RADIUS = 1;
-const SEGMENTS = 64;
-/** Front (+Z) disc — matches CSS MagikBall ~18% from top. */
-const EIGHT_DISC_Y = 0.36;
-const EIGHT_DISC_Z = 0.93;
-const EIGHT_DISC_RADIUS = 0.42;
-const EIGHT_EMBOSSED_OFFSET = 0.028;
 
-/** Procedural "8" disc texture (regenerate via `node scripts/generate-eight-texture.mjs`). */
-export function createEightDiscTexture(): CanvasTexture {
-  const size = 512;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('2d context unavailable');
+/** Shared with Background — F4 will tween timeScale on this ref. */
+export const oracleSceneTime = { value: 0 };
 
-  const stripe = resolveM8Color('stripe');
-  const stripeShadow = resolveM8Color('sphereWarm');
-  const digit = resolveM8Color('eight');
+// https://github.com/yiwenl/glsl-fbm/blob/master/3d.glsl (cywarr index.html)
+const CYWARR_FBM = `
+#define NUM_OCTAVES 6
 
-  const cx = size / 2;
-  const cy = size / 2;
-  const r = size * 0.48;
+float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
 
-  const discGrad = ctx.createRadialGradient(cx, cy * 0.88, r * 0.1, cx, cy, r);
-  discGrad.addColorStop(0, stripe);
-  discGrad.addColorStop(0.72, stripe);
-  discGrad.addColorStop(1, stripeShadow);
-  ctx.fillStyle = discGrad;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fill();
+float noise(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
 
-  ctx.shadowColor = 'rgba(255,255,255,0.45)';
-  ctx.shadowBlur = size * 0.02;
-  ctx.shadowOffsetY = -size * 0.008;
-  ctx.fillStyle = digit;
-  ctx.font = `900 ${Math.round(size * 0.58)}px "Arial Black", "Helvetica Neue", Helvetica, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('8', cx, cy * 1.02);
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
 
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+    return o4.y * d.y + o4.x * (1.0 - d.y);
+}
+
+float fbm(vec3 x) {
+    float v = 0.0;
+    float a = 0.5;
+    vec3 shift = vec3(100);
+    for (int i = 0; i < NUM_OCTAVES; ++i) {
+        v += a * noise(x);
+        x = x * 2.0 + shift;
+        a *= 0.5;
+    }
+    return v;
+}
+`;
+
+function resolveStripeShadow(): string {
+  if (typeof document === 'undefined') return 'rgb(200, 198, 192)';
+  const el = document.createElement('span');
+  el.style.display = 'none';
+  el.style.color = 'var(--m8-stripe-shadow)';
+  document.documentElement.appendChild(el);
+  const resolved = getComputedStyle(el).color;
+  el.remove();
+  return resolved && resolved !== '' ? resolved : 'rgb(200, 198, 192)';
+}
+
+function shellColorForPack(packId: keyof typeof PACK_FLUID_ACCENTS): Color {
+  const core = new Color(resolveM8Color('sphereCore'));
+  const accent = new Color(PACK_FLUID_ACCENTS[packId].fluidMid);
+  core.lerp(accent, 0.4);
+  return core.addScalar(0.25).multiplyScalar(5);
+}
+
+function shiftSphereSurface(
+  g: SphereGeometry,
+  hole: boolean,
+): void {
+  const sectors = 5;
+  const sph = new Spherical();
+  const v3 = new Vector3();
+  const n = new Vector3();
+  for (let i = 0; i < g.attributes.position.count; i++) {
+    v3.fromBufferAttribute(g.attributes.position, i);
+    sph.setFromVector3(v3);
+    const localTheta = (Math.abs(sph.theta) * sectors) / (Math.PI * 2);
+    const localThetaMod = localTheta % 1;
+    const phiShift = 1 - (Math.cos(localThetaMod * Math.PI * 2) * 0.5 + 0.5);
+    let phiAspect = sph.phi / Math.PI;
+    phiAspect = hole ? 1 - phiAspect : phiAspect;
+    const phiVal = Math.pow(phiShift, 0.9) * 0.05 * phiAspect;
+    sph.phi += hole ? -phiVal : phiVal;
+    v3.setFromSpherical(sph);
+    g.attributes.position.setXYZ(i, v3.x, v3.y, v3.z);
+    n.copy(v3).normalize();
+    g.attributes.normal.setXYZ(i, n.x, n.y, n.z);
+  }
+}
+
+function buildSides(g: SphereGeometry): PlaneGeometry {
+  const v3 = new Vector3();
+  const segs = g.parameters.widthSegments;
+  const pts: Vector3[] = new Array((segs + 1) * 2);
+  for (let i = 0; i <= segs; i++) {
+    v3.fromBufferAttribute(g.attributes.position, i);
+    pts[i] = v3.clone().setLength(v3.length() * 0.9);
+    pts[i + (segs + 1)] = v3.clone();
+  }
+  const sg = new PlaneGeometry(1, 1, segs, 1);
+  sg.setFromPoints(pts);
+  sg.computeVertexNormals();
+  return sg;
+}
+
+function buildCywarrBallGeometry(R: number) {
+  const g1 = new SphereGeometry(
+    R,
+    128,
+    64,
+    0,
+    Math.PI * 2,
+    Math.PI * 0.15,
+    Math.PI * 0.85,
+  );
+  shiftSphereSurface(g1, true);
+  const g2 = g1.clone();
+  g2.scale(0.9, 0.9, 0.9);
+  const g3 = buildSides(g1);
+  const g4 = new SphereGeometry(R - 0.01, 128, 32, 0, Math.PI * 2, 0, Math.PI * 0.15);
+  return mergeGeometries([g1, g2, g3, g4], true);
 }
 
 type BallProps = {
@@ -72,67 +153,125 @@ type BallProps = {
 };
 
 export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProps) {
-  const groupRef = useRef<Group>(null);
+  const { packId } = useOracle();
+  const choreoRef = useRef<Group>(null);
+  const meshRef = useRef<Mesh>(null);
+  const envTex = useLoader(TextureLoader, ENV_MAP_PATH) as Texture;
 
-  useOracleChoreography(groupRef, { phase, onAnimationDone, reducedMotion });
+  useOracleChoreography(choreoRef, { phase, onAnimationDone, reducedMotion });
 
-  const ballColor = useMemo(() => new Color(resolveM8Color('sphereCore')), []);
-  const eightTexture = useMemo(() => createEightDiscTexture(), []);
-  const showEight = isEightDiscVisible(phase);
-  const floatEnabled =
-    (phase === 'idle' || phase === 'answered') && !reducedMotion;
+  const geometry = useMemo(() => buildCywarrBallGeometry(BALL_RADIUS), []);
 
-  const ballMaterial = useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        color: ballColor,
-        roughness: 0.1,
-        metalness: 0,
-        clearcoat: 1,
-        clearcoatRoughness: 0.03,
-        envMapIntensity: 1.2,
-      }),
-    [ballColor],
-  );
+  useEffect(() => {
+    envTex.colorSpace = SRGBColorSpace;
+    envTex.mapping = EquirectangularReflectionMapping;
+  }, [envTex]);
 
-  const discMaterial = useMemo(
-    () =>
-      new MeshPhysicalMaterial({
-        map: eightTexture,
-        roughness: 0.22,
-        metalness: 0,
-        clearcoat: 0.65,
-        clearcoatRoughness: 0.08,
-        envMapIntensity: 0.85,
-        transparent: true,
-        side: DoubleSide,
-      }),
-    [eightTexture],
-  );
+  const materials = useMemo(() => {
+    const shellColor = shellColorForPack(packId);
+    const fluidDeep = new Color(resolveM8Color('fluidDeep'));
+    const stripeShadow = new Color(resolveStripeShadow());
+
+    const shell = new MeshStandardMaterial({
+      envMap: envTex,
+      color: shellColor,
+      roughness: 0.75,
+      metalness: 1,
+    });
+    shell.defines = { USE_UV: '' };
+    shell.onBeforeCompile = (shader) => {
+      shader.uniforms.time = oracleSceneTime;
+      shader.vertexShader = `
+        varying vec3 vPos;
+        ${shader.vertexShader}
+      `.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vPos = position;`,
+      );
+      shader.fragmentShader = `
+        #define ss(a, b, c) smoothstep(a, b, c)
+        uniform float time;
+        varying vec3 vPos;
+        ${CYWARR_FBM}
+        ${shader.fragmentShader}
+      `.replace(
+        '#include <roughnessmap_fragment>',
+        `
+        float roughnessFactor = roughness;
+
+        vec2 v2d = normalize(vPos.xz) * 1.;
+        vec3 nCoord = vPos + vec3(0, time, 0);
+
+        float nd = clamp(fbm(nCoord) * 0.25, 0., 1.);
+        nd = pow(nd, 0.5);
+        float hFactor = vUv.y;
+        nd = mix(0.25, nd, ss(0.4, 0.6, hFactor));
+        nd = mix(nd, 0., ss(0.9, 1., hFactor));
+
+        roughnessFactor *= clamp((nd * 0.8) + 0.2, 0., 1.);
+        `,
+      );
+    };
+
+    const cavity = new MeshLambertMaterial({
+      color: fluidDeep,
+      side: BackSide,
+    });
+
+    const sides = new MeshLambertMaterial({
+      color: stripeShadow,
+    });
+    sides.defines = { USE_UV: '' };
+    sides.onBeforeCompile = (shader) => {
+      shader.fragmentShader = `
+        #define ss(a, b, c) smoothstep(a, b, c)
+        #ifndef PI2
+        #define PI2 6.28318530718
+        #endif
+        ${shader.fragmentShader}
+      `.replace(
+        'vec4 diffuseColor = vec4( diffuse, opacity );',
+        `
+        vec3 col = diffuse;
+        vec2 uv = vUv;
+
+        vec2 wUv = uv - 0.5;
+        wUv.y *= 5.;
+        wUv.y += sin(uv.x * PI2 * 100.) * 0.04;
+        float fw = length(fwidth(wUv * PI));
+        float l = ss(fw, 0., abs(sin(wUv.y * PI)));
+
+        col = mix(col * 0.5, col, l);
+
+        vec4 diffuseColor = vec4( col, opacity );
+        `,
+      );
+    };
+
+    const lens = new MeshStandardMaterial({
+      envMap: envTex,
+      envMapIntensity: 10,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.25,
+      metalness: 1,
+      roughness: 0,
+    });
+
+    return [shell, cavity, sides, lens];
+  }, [envTex, packId]);
+
+  useFrame((state) => {
+    oracleSceneTime.value = state.clock.elapsedTime;
+  });
 
   return (
-    <group ref={groupRef}>
-      <Float
-        speed={phase === 'answered' ? 1.6 : 1.15}
-        rotationIntensity={0}
-        floatIntensity={phase === 'answered' ? 0.06 : 0.1}
-        floatingRange={[-0.035, 0.035]}
-        enabled={floatEnabled}
-      >
-        <mesh material={ballMaterial}>
-          <sphereGeometry args={[BALL_RADIUS, SEGMENTS, SEGMENTS]} />
-        </mesh>
-        {showEight && (
-          <mesh
-            position={[0, EIGHT_DISC_Y, EIGHT_DISC_Z + EIGHT_EMBOSSED_OFFSET]}
-            material={discMaterial}
-            renderOrder={2}
-          >
-            <circleGeometry args={[EIGHT_DISC_RADIUS, 64]} />
-          </mesh>
-        )}
-        <AnswerWindow phase={phase} reducedMotion={reducedMotion} />
-      </Float>
+    <group>
+      <mesh ref={meshRef} geometry={geometry} material={materials} renderOrder={9999} />
+      <AnswerWindow phase={phase} reducedMotion={reducedMotion} />
+      {/* F4 replaces rotation choreography; hidden anchor keeps FSM reveal until then. */}
+      <group ref={choreoRef} visible={false} />
     </group>
   );
 }

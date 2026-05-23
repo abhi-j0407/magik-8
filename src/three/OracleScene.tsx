@@ -1,7 +1,7 @@
-import { AdaptiveDpr, ContactShadows } from '@react-three/drei';
+import { AdaptiveDpr, ContactShadows, OrbitControls } from '@react-three/drei';
 import { Canvas, useLoader } from '@react-three/fiber';
-import { useEffect, useState } from 'react';
-import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader } from 'three';
+import { useEffect, useMemo, useState } from 'react';
+import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
 import { MagikBall } from '../components/MagikBall';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './AnswerText';
@@ -19,16 +19,43 @@ const BALL_SIZE = 'min(70vh, 360px)';
 const DPR_MIN = 1;
 const DPR_MAX = 1.5;
 
+const CAM_POS = new Vector3(0, 1, 0.375).setLength(3.75);
+
 type OracleCanvasProps = {
   canvasKey: number;
   onContextLost: () => void;
   onContextRestored: () => void;
 };
 
+function SceneControls() {
+  const { phase } = useOracle();
+  const orbitEnabled = phase === 'idle' || phase === 'answered';
+
+  return (
+    <OrbitControls
+      enabled={orbitEnabled}
+      enableDamping
+      enablePan={false}
+      enableZoom={false}
+      minPolarAngle={Math.PI * 0.2}
+      maxPolarAngle={Math.PI * 0.55}
+    />
+  );
+}
+
 function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCanvasProps) {
   const { phase, onAnimationDone } = useOracle();
   const { prefersReducedMotion } = useWebglCapability();
   const [frameloop, setFrameloop] = useState<'always' | 'demand'>('always');
+  const camera = useMemo(
+    () => ({
+      fov: 60,
+      near: 0.05,
+      far: 50,
+      position: CAM_POS.toArray() as [number, number, number],
+    }),
+    [],
+  );
 
   useEffect(() => {
     const sync = () => setFrameloop(document.hidden ? 'demand' : 'always');
@@ -40,18 +67,18 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
   return (
     <Canvas
       key={canvasKey}
-      camera={{ position: [0, 0, 2.8], fov: 42 }}
+      camera={camera}
       dpr={[DPR_MIN, DPR_MAX]}
       frameloop={frameloop}
       gl={{
         antialias: true,
         alpha: true,
-        // G8: required for share PNG readback when WebGL is on. No Lighthouse impact while VITE_WEBGL default is false.
         preserveDrawingBuffer: true,
         toneMapping: ACESFilmicToneMapping,
         outputColorSpace: SRGBColorSpace,
       }}
       onCreated={({ gl }) => {
+        gl.toneMappingExposure = 1.0;
         gl.domElement.setAttribute('data-m8-oracle-canvas', '');
 
         const onLost = (event: Event) => {
@@ -72,6 +99,7 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
       }}
       style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
     >
+      <SceneControls />
       <AdaptiveDpr pixelated />
       <color attach="background" args={['transparent']} />
       <Background />
