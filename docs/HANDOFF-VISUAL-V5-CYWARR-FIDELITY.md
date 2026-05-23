@@ -2,7 +2,7 @@
 id: handoff-visual-v5-cywarr-fidelity
 version: 1.0.0
 status: active
-current_phase: F4
+current_phase: F5
 webgl_flag: off (testing flag-on; prod flip is overseer-only, post-F5)
 deploy_url: null
 ---
@@ -18,29 +18,27 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F3
+## Handoff — F4
 **Status:** complete
-**Agent:** F3 implementer
-**Branch / PR:** fix/v5-f3-answer — merged to main as squash commit on main (gh PR skipped — no `gh auth` on coordinator host)
+**Agent:** F4 implementer
+**Branch / PR:** fix/v5-f4-shake — merged to main as 8f55402 (squash; gh PR skipped — no `gh auth` on coordinator host)
 **Changed:**
-- src/three/AnswerPanel.tsx — Plane(0.8), INK_STEP 0.0125, cyan ink, orange text in fragment shader, pack theming removed
-- src/three/answerAtlas.ts — Courier New bold 30px
-- src/three/answerAtlas.test.ts, src/three/AnswerPanel.test.ts — updated/added tests
-**Verified:** tsc ✓ · build ✓ · test ✓ (67) · e2e ✓ (5) · /code-review ✓ · flag-off ✓ · visual ✓
+- src/three/useOracleChoreography.ts — multi-axis transform shake + settle; reduced-motion skips transform
+- src/three/oracleChoreography.test.ts — shake amplitude + reduced-motion tests
+**Verified:** tsc ✓ · build ✓ · test ✓ (71) · e2e ✓ (5) · /code-review ✓ · flag-off ✓ · visual ✓
 **Acceptance:**
-- PlaneGeometry(0.8, 0.8), INK_STEP = 0.0125, LENS_TOP_Y = 0.75, 4 instanced planes
-- Cyan additive ink (0, 0.5, 1); orange text vec3(1, 0.5, 0) in fragment shader
-- Courier New bold 30px on 256² transparent atlas
-- Easter-egg amber ink SDF mix preserved; pack theming removed from panel/atlas
-- useOracleChoreography.ts untouched; FSM onAnimationDone() contract unchanged
-**Integration:** Exports LENS_TOP_Y, ANSWER_PLANE_SIZE (0.8), INK_STEP (0.0125); answerPanelUniforms (baseVisibility, textVisibility, text, isEasterEgg, inkTextTint for F4 API only)
-**Next:** F4 — real felt shake on jitterRef
+- Multi-axis translate (±0.09) + tilt (x/z ±0.12 rad) on jitterRef during shaking, yoyo cycles, settle to zero before reveal
+- oracleSceneTimeScale ramp 1→3 unchanged; SHAKE_DURATION_MS stays 400
+- Reveal contract unchanged (REVEAL_MS 600, two opacity tweens, onAnimationDone() at timeline end)
+- Reduced motion: no transform shake; instant timeScale=3; FSM still reaches answered
+**Integration:** Exported SHAKE_POS_AMPLITUDE (0.09), SHAKE_TILT_RAD (0.12), SHAKE_DURATION_MS (400); runTransformShake timeline ~0.34s oscillation + 0.06s settle; reduced-motion skips position/rotation tweens only
+**Next:** F5 — QA, lighthouse, supersede V4 docs, finalize handoff
 **Blockers:** none
 **Notes for next agent:**
-- Text color is shader-fixed orange; F4 may stop writing inkTextTint in prepareRevealInk if desired
-- Ball materials/env frozen (F2) — do not re-theme
-- tri() uv scale * 6. works at 0.8 without tuning
-- E2E: run via Playwright webServer (build + preview on 127.0.0.1:4173)
+- inkTextTint only written for easter-egg amber now
+- Do not edit useOracleMachine.ts — shaking duration frozen at 400ms
+- F5 owns docs/Lighthouse/e2e snapshots; no further src/three/* rendering edits per plan
+- Manual: side-by-side cywarr shake feel, prefers-reduced-motion in browser
 ```
 
 ## Phase checklist
@@ -48,40 +46,37 @@ deploy_url: null
 - [x] **F1** — Background, transparency, camera, free rotation
 - [x] **F2** — Faithful cywarr ball materials + env map
 - [x] **F3** — Answer window fidelity + readability
-- [ ] **F4** — Real felt shake
+- [x] **F4** — Real felt shake
 - [ ] **F5** — QA, perf, verification, docs
 
 ## Active locks
 
-**F4 owns (in flight):**
-- `src/three/useOracleChoreography.ts` — perceptible transform shake on `jitterRef` group
-- `src/three/oracleChoreography.test.ts` — shake + reduced-motion tests
+**F5 owns (in flight):**
+- `package.json` / `vite.config.ts` (only if needed for QA)
+- `e2e/webgl.spec.ts`, `e2e/__snapshots__/*` (if snapshots added)
+- `docs/PLAN-VISUAL-V4-CYWARR.md`, `docs/HANDOFF-VISUAL-V4-CYWARR.md` (mark superseded)
+- `docs/PLAN-VISUAL-V5-CYWARR-FIDELITY.md`, `docs/HANDOFF-VISUAL-V5-CYWARR-FIDELITY.md` (finalize)
+- `scripts/lighthouse.mjs` (thresholds only if measured scores require it)
 
-**F1–F3 merged — frozen:** OracleScene shell, Ball/Lighting/env, AnswerPanel/answerAtlas.
-
-_All other `src/three/*` rendering files are locked until F5._
+**F1–F4 merged — frozen:** all `src/three/*` rendering files. **Do not edit** Ball, AnswerPanel, OracleScene, choreography, etc.
 
 ## Stack (pinned — confirm from package-lock at F5)
 
 | Package | Pinned | Notes |
 |---------|--------|-------|
-| `three` | 0.184.0 | `mergeGeometries`, `EquirectangularReflectionMapping` |
-| `@react-three/fiber` | 9.6.1 | `<Canvas alpha>` |
-| `@react-three/drei` | 10.7.7 | `AdaptiveDpr`, `OrbitControls` |
-| `gsap` | 3.15.0 | F4 shake + reveal tweens |
+| `three` | 0.184.0 | |
+| `@react-three/fiber` | 9.6.1 | |
+| `@react-three/drei` | 10.7.7 | |
+| `gsap` | 3.15.0 | F4 shake tweens |
 
 ## Decisions log (frozen unless user changes)
 
 | Decision | Value |
 |----------|-------|
-| Target | cywarr ball **verbatim** (geometry, materials, env map, answer window); colors deferred |
-| Env map | cywarr's exact `2294472375_24a3b8ef46_o.jpg`, bundled locally |
-| Background | Transparent canvas + CSS dark radial glow |
-| Shake | Real transform shake (translate + tilt) — **overrides V4 "no rotation" lock** (user-approved) |
-| Rotation | Free + unconstrained orbit + drag-vs-tap guard |
-| Answer panel | `PlaneGeometry(0.8)`, cyan `(0,0.5,1)`, orange `(1,0.5,0)`, `bold 30px Courier New` |
-| FSM contract | Unchanged; `onAnimationDone()` at end of 2nd opacity tween |
-| WebGL gating | `VITE_WEBGL` unset in prod until overseer flips after QA |
+| Target | cywarr ball **verbatim** |
+| Env map | `public/env/cywarr-env.jpg` (~748 KB) |
+| Shake | SHAKE_POS_AMPLITUDE 0.09, SHAKE_TILT_RAD 0.12, duration 400ms (machine) |
+| WebGL gating | `VITE_WEBGL` unset in prod until overseer flips after F5 QA |
 | Deploy | Overseer-only |
 
 ## QA results
@@ -93,14 +88,14 @@ _All other `src/three/*` rendering files are locked until F5._
 | Drag-vs-tap guard (drag ≠ shake) | ✓ | F1 |
 | Ball matches cywarr deep glossy purple (not chrome) | ✓ | F2 |
 | Answer readable: cyan triangle + orange Courier | ✓ | F3 |
-| Real felt shake before reveal | — | F4 |
-| Reduced-motion: shake skipped, FSM progresses | — | F4 |
-| Flag-off = today's CSS behaviour | ✓ | F1–F3 |
+| Real felt shake before reveal | ✓ | F4 merged 8f55402 |
+| Reduced-motion: shake skipped, FSM progresses | ✓ | F4 |
+| Flag-off = today's CSS behaviour | ✓ | F1–F4 |
 | Lighthouse flag-off ≥85 / flag-on ≥50 | — | F5 |
 
 ## Flag-on QA checklist (manual, before prod flip — overseer)
 
-- [ ] `VITE_WEBGL=true npm run dev` on desktop — deep glossy purple ball on dark bg + glow
+- [ ] `VITE_WEBGL=true npm run dev` — purple ball on dark bg + glow
 - [ ] Drag rotates freely; tap shakes, drag does not
 - [ ] Answer: cyan triangle + orange Courier
 - [ ] One real phone — DPR capped, rotation + shake smooth
@@ -109,4 +104,5 @@ _All other `src/three/*` rendering files are locked until F5._
 
 ## V4 supersession
 
-V4 docs superseded once F5 merges (`superseded_by: PLAN-VISUAL-V5-CYWARR-FIDELITY`).
+Pending F5: mark [`PLAN-VISUAL-V4-CYWARR.md`](./PLAN-VISUAL-V4-CYWARR.md) and
+[`HANDOFF-VISUAL-V4-CYWARR.md`](./HANDOFF-VISUAL-V4-CYWARR.md) **superseded** by V5.
