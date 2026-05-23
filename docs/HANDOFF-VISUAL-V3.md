@@ -20,7 +20,7 @@ deploy_url: null
 ## Handoff — G1
 **Status:** complete
 **Agent:** G1 implementer
-**Branch / PR:** phase/g1-foundation — https://github.com/abhi-j0407/magik-8/compare/main...phase/g1-foundation (PR pending: `gh auth login` then create/merge)
+**Branch / PR:** merged to `main` @ a10ff8a (squash; remote `phase/g1-foundation` deleted)
 **Changed:**
 - package.json / package-lock.json — pin three@0.184.0, R3F v9/v10, postprocessing v3, gsap 3.15.0
 - src/components/OracleStage.tsx — VITE_WEBGL seam + Suspense/MagikBall fallback
