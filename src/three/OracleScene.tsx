@@ -1,16 +1,14 @@
 import { AdaptiveDpr, OrbitControls } from '@react-three/drei';
-import { Canvas, useLoader } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, Vector3 } from 'three';
+import { NeutralToneMapping, SRGBColorSpace, Vector3 } from 'three';
 import { MagikBall } from '../components/MagikBall';
 import { useOracle } from '../context/OracleContext';
 import { getAnswerDisplayText } from './answerAtlas';
 import { Ball } from './Ball';
 import { Effects } from './Effects';
-import { ENV_MAP_PATH, Lighting } from './Lighting';
+import { Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
-
-useLoader.preload(TextureLoader, ENV_MAP_PATH);
 
 const BALL_SIZE = 'min(70vh, 360px)';
 
@@ -86,11 +84,11 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
         antialias: true,
         alpha: true,
         preserveDrawingBuffer: true,
-        toneMapping: ACESFilmicToneMapping,
+        toneMapping: NeutralToneMapping,
         outputColorSpace: SRGBColorSpace,
       }}
       onCreated={({ gl }) => {
-        gl.toneMappingExposure = 1.0;
+        gl.toneMappingExposure = 1.1;
         gl.domElement.setAttribute('data-m8-oracle-canvas', '');
 
         const onLost = (event: Event) => {
