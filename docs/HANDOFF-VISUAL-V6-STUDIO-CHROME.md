@@ -22,7 +22,7 @@ deploy_url: null
 ## Handoff — F3
 **Status:** complete
 **Agent:** F3 implementer
-**Branch / PR:** v6/f3-qa-cleanup → visual/v6-studio-chrome — (see PR URL after push)
+**Branch / PR:** v6/f3-qa-cleanup → visual/v6-studio-chrome — https://github.com/abhi-j0407/magik-8/compare/visual/v6-studio-chrome...v6/f3-qa-cleanup?expand=1 (open PR; `gh` not authed in agent env)
 **Changed:**
 - public/env/cywarr-env.jpg — deleted dead 748648 B HDRI (no src refs)
 - docs/PLAN-VISUAL-V5-CYWARR-FIDELITY.md — status superseded_by V6
