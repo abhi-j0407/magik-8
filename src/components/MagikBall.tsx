@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { useOracle } from '../context/OracleContext';
 import { AnswerTriangle } from './AnswerTriangle';
 
-const BALL_SIZE = 'min(70vh, 360px)';
+const BALL_SIZE = 'min(70dvh, calc(100vw - 2.5rem), 360px)';
 
 type MagikBallProps = {
   /** Transient WebGL load / error / context-loss fallback — no interaction. */

@@ -32,6 +32,26 @@ test.describe('Magik 8 oracle (WebGL path)', () => {
     });
   });
 
+  test('keeps the ball centered on mobile viewports', async ({ page }) => {
+    const viewport = { width: 390, height: 844 };
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+
+    const ball = page.getByRole('button', {
+      name: /magik 8 ball — tap or shake to reveal/i,
+    });
+    await expect(ball).toBeVisible({ timeout: 30_000 });
+
+    const box = await ball.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) return;
+
+    const ballCenter = box.x + box.width / 2;
+    expect(Math.abs(ballCenter - viewport.width / 2)).toBeLessThanOrEqual(1);
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  });
+
   test('theme switch when answered', async ({ page }) => {
     await page.goto('/');
     await expect(

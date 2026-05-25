@@ -1,13 +1,13 @@
 @import 'tailwindcss';
 
 :root {
-  /* stage / surface */
+  /* stage / surface — neutral charcoal, theme-independent */
   --m8-bg:              oklch(13% 0.008 270);
   --m8-bg-elev:         oklch(17% 0.008 270);
   --m8-rule:            oklch(24% 0.008 270);
   --m8-rule-hi:         oklch(34% 0.012 268);
 
-  /* sphere */
+  /* sphere — near-black, theme-independent (it is an 8-ball) */
   --m8-sphere-rim:      oklch(4%  0     0);
   --m8-sphere-core:     oklch(9%  0.004 270);
   --m8-sphere-mid:      oklch(15% 0.006 270);
@@ -20,7 +20,7 @@
   --m8-stripe-shadow:   oklch(78% 0.020 90);
   --m8-eight:           oklch(9%  0.004 270);
 
-  /* triangle window + cobalt ink */
+  /* ── themeable: cavity window + fluid ink (default = classic / cobalt) ── */
   --m8-cavity-rim:      oklch(3%  0     0);
   --m8-cavity-dark:     oklch(8%  0.040 265);
   --m8-fluid-deep:      oklch(18% 0.150 262);
@@ -30,22 +30,35 @@
   --m8-answer-ink:      oklch(95% 0.014 92);
   --m8-answer-glow:     oklch(65% 0.080 240);
 
-  /* accents */
+  /* ── themeable: UI accent (default = classic / cobalt) ── */
+  --m8-accent:          oklch(64% 0.150 250);
+  --m8-accent-strong:   oklch(72% 0.165 248);
+  --m8-accent-dim:      oklch(50% 0.110 252);
+  --m8-accent-ghost:    oklch(64% 0.150 250 / 0.10);
+  --m8-accent-line:     oklch(64% 0.150 250 / 0.32);
+
+  /* ── themeable: backdrop aurora wash ── */
+  --m8-aurora-1:        oklch(46% 0.180 252 / 0.42);
+  --m8-aurora-2:        oklch(30% 0.170 258 / 0.32);
+  --m8-aurora-3:        oklch(22% 0.140 264 / 0.30);
+
+  /* fixed brand accent — wordmark "8" + easter-egg + rare "magic" pop.
+     Never themed; the constant that ties the brand together. */
   --m8-amber:           oklch(78% 0.135 78);
   --m8-amber-dim:       oklch(58% 0.100 78);
 
-  /* chrome / text */
+  /* chrome / text — neutral, theme-independent */
   --m8-chrome:          oklch(72% 0.005 270);
   --m8-chrome-dim:      oklch(54% 0.005 270);
   --m8-chrome-mute:     oklch(40% 0.005 270);
-  --m8-danger:          oklch(60% 0.180 28);
+  --m8-danger:          oklch(62% 0.190 22);
 
   /* type families */
   --m8-font-wordmark:   "VT323", "Courier New", ui-monospace, monospace;
   --m8-font-answer:     "Oswald", "Bebas Neue", "Archivo Narrow", "Arial Narrow", sans-serif;
   --m8-font-numeral:    "Helvetica Neue", "Helvetica", "Arial Black", sans-serif;
-  --m8-font-ui:         "Tahoma", "Verdana", "Geneva", system-ui, sans-serif;
-  --m8-font-hud:        "VT323", "Courier New", ui-monospace, monospace;
+  --m8-font-ui:         "Space Mono", ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  --m8-font-hud:        "Space Mono", ui-monospace, "SFMono-Regular", "Menlo", monospace;
 
   /* type scale (mobile-first) */
   --m8-text-wordmark:   22px;
@@ -63,6 +76,7 @@
   --m8-dur-shake:       400ms;
   --m8-dur-reveal:      600ms;
   --m8-dur-text-fade:   200ms;
+  --m8-dur-theme:       420ms;
   --m8-ease-toy:        cubic-bezier(.22, 1, .36, 1);
   --m8-ease-ink:        cubic-bezier(.16, .8, .3, 1);
 
@@ -74,12 +88,54 @@
   --m8-radius-card:     12px;
 }
 
+/* ── Per-mode palettes — recolour cavity/fluid/accent/aurora only.
+   Sphere body, chrome text and brand amber stay constant. ── */
+
+:root[data-pack="party"] {
+  --m8-cavity-dark:     oklch(9%  0.050 28);
+  --m8-fluid-deep:      oklch(20% 0.130 25);
+  --m8-fluid-mid:       oklch(33% 0.190 27);
+  --m8-fluid-hi:        oklch(52% 0.220 26);
+  --m8-fluid-meniscus:  oklch(74% 0.150 32);
+  --m8-answer-glow:     oklch(62% 0.180 28);
+
+  --m8-accent:          oklch(62% 0.205 27);
+  --m8-accent-strong:   oklch(69% 0.225 27);
+  --m8-accent-dim:      oklch(48% 0.160 27);
+  --m8-accent-ghost:    oklch(62% 0.205 27 / 0.12);
+  --m8-accent-line:     oklch(62% 0.205 27 / 0.34);
+
+  --m8-aurora-1:        oklch(46% 0.205 28 / 0.42);
+  --m8-aurora-2:        oklch(31% 0.185 24 / 0.34);
+  --m8-aurora-3:        oklch(23% 0.150 20 / 0.30);
+}
+
+:root[data-pack="career"] {
+  --m8-cavity-dark:     oklch(10% 0.030 70);
+  --m8-fluid-deep:      oklch(22% 0.070 68);
+  --m8-fluid-mid:       oklch(36% 0.110 78);
+  --m8-fluid-hi:        oklch(58% 0.140 82);
+  --m8-fluid-meniscus:  oklch(83% 0.115 88);
+  --m8-answer-glow:     oklch(70% 0.130 82);
+
+  --m8-accent:          oklch(75% 0.140 80);
+  --m8-accent-strong:   oklch(83% 0.150 84);
+  --m8-accent-dim:      oklch(60% 0.110 78);
+  --m8-accent-ghost:    oklch(75% 0.140 80 / 0.12);
+  --m8-accent-line:     oklch(75% 0.140 80 / 0.34);
+
+  --m8-aurora-1:        oklch(58% 0.140 80 / 0.36);
+  --m8-aurora-2:        oklch(40% 0.120 74 / 0.30);
+  --m8-aurora-3:        oklch(28% 0.090 66 / 0.28);
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --m8-dur-idle:        0ms;
     --m8-dur-shake:       0ms;
     --m8-dur-reveal:      0ms;
     --m8-dur-text-fade:   0ms;
+    --m8-dur-theme:       0ms;
   }
 
   .m8-sheet-scrim {
@@ -99,6 +155,7 @@ body {
   color: var(--m8-chrome);
   font-family: var(--m8-font-ui);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #root {
@@ -118,17 +175,33 @@ body {
   z-index: 50;
 }
 
-/* heavily-blurred cobalt gradient — full-page depth behind the ball/UI */
-.m8-bg-aurora {
+/* heavily-blurred wash — full-page depth behind the ball/UI.
+   Per-mode colours are baked into the modifier classes so the swap can
+   cross-fade (gradients can't transition via custom-property change). */
+.m8-aurora {
   position: absolute;
   inset: -25%;
   z-index: 0;
   pointer-events: none;
+  filter: blur(60px);
+}
+.m8-aurora--classic {
   background:
     radial-gradient(60% 50% at 50% 36%, oklch(46% 0.180 252 / 0.42), transparent 70%),
     radial-gradient(70% 62% at 28% 72%, oklch(30% 0.170 258 / 0.32), transparent 72%),
     radial-gradient(82% 70% at 76% 60%, oklch(22% 0.140 264 / 0.30), transparent 75%);
-  filter: blur(60px);
+}
+.m8-aurora--party {
+  background:
+    radial-gradient(60% 50% at 50% 36%, oklch(46% 0.205 28 / 0.42), transparent 70%),
+    radial-gradient(70% 62% at 28% 72%, oklch(31% 0.185 24 / 0.34), transparent 72%),
+    radial-gradient(82% 70% at 76% 60%, oklch(23% 0.150 20 / 0.30), transparent 75%);
+}
+.m8-aurora--career {
+  background:
+    radial-gradient(60% 50% at 50% 36%, oklch(58% 0.140 80 / 0.36), transparent 70%),
+    radial-gradient(70% 62% at 28% 72%, oklch(40% 0.120 74 / 0.30), transparent 72%),
+    radial-gradient(82% 70% at 76% 60%, oklch(28% 0.090 66 / 0.28), transparent 75%);
 }
 
 /* radial vignette */
@@ -145,6 +218,23 @@ body {
   );
   z-index: 40;
 }
+
+/* screen-corner registration marks — instrument-panel framing */
+.m8-corner {
+  position: absolute;
+  z-index: 41;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  border: 1px solid var(--m8-rule-hi);
+  opacity: 0.6;
+}
+.m8-corner-tl { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.m8-corner-tr { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.m8-corner-bl { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.m8-corner-br { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+.m8-tabnum { font-variant-numeric: tabular-nums; }
 
 .m8-wordmark {
   font-family: var(--m8-font-wordmark);
@@ -171,7 +261,7 @@ body {
     0 0 2px oklch(78% 0.135 78 / 0.85);
 }
 
-/* chrome — icon button, CTA, sheets, share row */
+/* ── chrome — icon button, CTA, sheets, share row ── */
 .m8-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -186,16 +276,26 @@ body {
   border-radius: 8px;
   color: var(--m8-chrome-dim);
   cursor: pointer;
-  transition: color 120ms, border-color 120ms, background-color 120ms;
+  transition:
+    color 140ms var(--m8-ease-toy),
+    border-color 140ms var(--m8-ease-toy),
+    background-color 140ms var(--m8-ease-toy);
 }
 .m8-icon-btn:hover {
   color: var(--m8-chrome);
-  border-color: var(--m8-rule-hi);
-  background: rgba(255, 255, 255, 0.02);
+  border-color: var(--m8-accent-line);
+  background: var(--m8-accent-ghost);
+}
+.m8-icon-btn:active {
+  transform: translateY(0.5px);
 }
 .m8-icon-btn:focus-visible {
-  outline: 2px solid var(--m8-amber);
+  outline: 2px solid var(--m8-accent);
   outline-offset: 2px;
+}
+.m8-icon-btn[aria-pressed="true"] {
+  color: var(--m8-chrome);
+  border-color: var(--m8-rule-hi);
 }
 
 .m8-cta {
@@ -203,66 +303,74 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 12px 28px;
-  background: linear-gradient(180deg, oklch(20% 0.005 270) 0%, oklch(14% 0.005 270) 100%);
+  min-height: 48px;
+  padding: 13px 30px;
+  background: linear-gradient(180deg, oklch(21% 0.006 270) 0%, oklch(14% 0.006 270) 100%);
   color: var(--m8-chrome);
   font-family: var(--m8-font-ui);
   font-size: var(--m8-text-ui-lg);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.08em;
   text-transform: lowercase;
   border: 1px solid var(--m8-rule);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -1px 0 rgba(0, 0, 0, 0.5),
     0 1px 0 rgba(0, 0, 0, 0.6);
-  transition: border-color 120ms, color 120ms, transform 60ms;
+  transition:
+    border-color 160ms var(--m8-ease-toy),
+    color 160ms var(--m8-ease-toy),
+    box-shadow 200ms var(--m8-ease-toy);
 }
 .m8-cta:hover {
-  border-color: var(--m8-amber-dim);
+  border-color: var(--m8-accent-dim);
   color: var(--m8-stripe);
-}
-.m8-cta:active {
-  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--m8-accent-ghost),
+    0 0 22px -6px var(--m8-accent);
 }
 .m8-cta:focus-visible {
-  outline: 2px solid var(--m8-amber);
+  outline: 2px solid var(--m8-accent);
   outline-offset: 2px;
 }
 .m8-cta:disabled {
-  opacity: 0.55;
   cursor: not-allowed;
+}
+.m8-cta-busy {
+  color: var(--m8-chrome-dim);
+}
+.m8-cta-label {
+  position: relative;
+  z-index: 1;
 }
 .m8-cta-corner {
   position: absolute;
   font-family: var(--m8-font-hud);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--m8-chrome-mute);
   pointer-events: none;
   line-height: 1;
+  transition:
+    color 160ms var(--m8-ease-toy),
+    top 200ms var(--m8-ease-toy),
+    left 200ms var(--m8-ease-toy),
+    right 200ms var(--m8-ease-toy),
+    bottom 200ms var(--m8-ease-toy);
 }
-.m8-cta-corner-tl {
-  top: 2px;
-  left: 4px;
-}
-.m8-cta-corner-tr {
-  top: 2px;
-  right: 4px;
-}
-.m8-cta-corner-bl {
-  bottom: 2px;
-  left: 4px;
-}
-.m8-cta-corner-br {
-  bottom: 2px;
-  right: 4px;
-}
-.m8-cta:hover .m8-cta-corner {
-  color: var(--m8-amber);
-}
+.m8-cta-corner-tl { top: 3px; left: 5px; }
+.m8-cta-corner-tr { top: 3px; right: 5px; }
+.m8-cta-corner-bl { bottom: 3px; left: 5px; }
+.m8-cta-corner-br { bottom: 3px; right: 5px; }
+.m8-cta:hover .m8-cta-corner { color: var(--m8-accent); }
+.m8-cta:hover .m8-cta-corner-tl { top: 1px; left: 3px; }
+.m8-cta:hover .m8-cta-corner-tr { top: 1px; right: 3px; }
+.m8-cta:hover .m8-cta-corner-bl { bottom: 1px; left: 3px; }
+.m8-cta:hover .m8-cta-corner-br { bottom: 1px; right: 3px; }
 
 .m8-link-btn {
   appearance: none;
@@ -271,14 +379,22 @@ body {
   color: var(--m8-chrome-dim);
   font-family: var(--m8-font-ui);
   font-size: var(--m8-text-ui);
+  letter-spacing: 0.04em;
   padding: 12px 16px;
   cursor: pointer;
   text-decoration: underline;
-  text-decoration-color: var(--m8-rule);
-  text-underline-offset: 3px;
+  text-decoration-color: var(--m8-rule-hi);
+  text-underline-offset: 4px;
+  transition: color 140ms var(--m8-ease-toy), text-decoration-color 140ms var(--m8-ease-toy);
 }
 .m8-link-btn:hover {
   color: var(--m8-chrome);
+  text-decoration-color: var(--m8-accent-dim);
+}
+.m8-link-btn:focus-visible {
+  outline: 2px solid var(--m8-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
 }
 
 .m8-sheet-scrim {
@@ -293,12 +409,8 @@ body {
   animation: m8-fade-in 200ms ease-out;
 }
 @keyframes m8-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 .m8-sheet {
   width: 100%;
@@ -314,14 +426,8 @@ body {
   animation: m8-rise 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes m8-rise {
-  from {
-    transform: translateY(24px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 .m8-sheet-handle {
   width: 36px;
@@ -343,7 +449,7 @@ body {
   margin: 0 0 16px;
   font-family: var(--m8-font-ui);
   font-size: var(--m8-text-ui);
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--m8-chrome-dim);
 }
 .m8-sheet-actions {
@@ -357,36 +463,36 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   max-width: 320px;
 }
 .m8-share-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 10px 22px;
+  gap: 9px;
+  min-height: 46px;
+  padding: 11px 24px;
   background: linear-gradient(180deg, var(--m8-fluid-mid) 0%, var(--m8-fluid-deep) 100%);
   color: var(--m8-stripe);
   font-family: var(--m8-font-ui);
   font-size: var(--m8-text-ui);
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   text-transform: lowercase;
   border: 1px solid var(--m8-fluid-hi);
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-  transition: filter 120ms;
+  transition: filter 140ms var(--m8-ease-toy), background 320ms var(--m8-ease-toy);
 }
 .m8-share-btn:hover {
-  filter: brightness(1.1);
+  filter: brightness(1.12);
 }
 .m8-share-btn:focus-visible {
-  outline: 2px solid var(--m8-fluid-hi);
+  outline: 2px solid var(--m8-accent);
   outline-offset: 2px;
 }
 .m8-share-btn:disabled {
@@ -398,7 +504,8 @@ body {
   font-family: var(--m8-font-hud);
   font-size: var(--m8-text-hud);
   color: var(--m8-chrome-dim);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
 }
 .m8-share-status-err {
   color: var(--m8-danger);

@@ -8,9 +8,10 @@ import { getAnswerDisplayText } from './answerAtlas';
 import { Ball } from './Ball';
 import { Effects } from './Effects';
 import { Lighting } from './Lighting';
+import { BallThemeProvider } from './useBallThemeSpring';
 import { useWebglCapability } from './useWebglCapability';
 
-const BALL_SIZE = 'min(78vh, 440px)';
+const BALL_SIZE = 'min(78dvh, calc(100vw - 2.5rem), 440px)';
 
 /** DPR floor — AdaptiveDpr may lower further under load. */
 const DPR_MIN = 1;
@@ -118,13 +119,15 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
     >
       <SceneControls />
       <AdaptiveDpr pixelated />
-      <Lighting />
-      <Ball
-        phase={phase}
-        onAnimationDone={onAnimationDone}
-        reducedMotion={prefersReducedMotion}
-      />
-      <Effects />
+      <BallThemeProvider reducedMotion={prefersReducedMotion}>
+        <Lighting />
+        <Ball
+          phase={phase}
+          onAnimationDone={onAnimationDone}
+          reducedMotion={prefersReducedMotion}
+        />
+        <Effects />
+      </BallThemeProvider>
     </Canvas>
   );
 }
