@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
 import {
   BackSide,
@@ -17,6 +17,12 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
 import { AnswerPanel } from './AnswerPanel';
+import { ballCavityUniforms, ballSidesUniforms } from './ballFluidUniforms';
+import {
+  ballThemeMaterialSlots,
+  resolveBallThemePalette,
+  syncBallThemeOnMount,
+} from './useBallThemeSpring';
 import { useOracleChoreography } from './useOracleChoreography';
 
 export const BALL_RADIUS = 1;
@@ -131,10 +137,14 @@ type BallProps = {
   reducedMotion?: boolean;
 };
 
+const DIFFUSE_COLOR_LINE = 'vec4 diffuseColor = vec4( diffuse, opacity );';
+
 export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProps) {
-  const { result } = useOracle();
+  const { result, packId } = useOracle();
   const jitterRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
+  const cavityMatRef = useRef<MeshLambertMaterial | null>(null);
+  const sidesMatRef = useRef<MeshBasicMaterial | null>(null);
 
   useOracleChoreography(jitterRef, {
     phase,
@@ -146,6 +156,8 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
   const geometry = useMemo(() => buildCywarrBallGeometry(BALL_RADIUS), []);
 
   const materials = useMemo(() => {
+    const theme = resolveBallThemePalette(packId);
+
     const shell = new MeshStandardMaterial({
       // Boosted indigo (cywarr recipe) — at metalness 1 this tints the env
       // reflection so the whole ball reads as one unified purple chrome.
@@ -155,22 +167,22 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
       envMapIntensity: 1.2,
     });
     shell.defines = { USE_UV: '' };
-    shell.onBeforeCompile = (shader) => {
-      shader.uniforms.time = oracleSceneTime;
-      shader.vertexShader = `
+    shell.onBeforeCompile = (parameters) => {
+      parameters.uniforms.time = oracleSceneTime;
+      parameters.vertexShader = `
         varying vec3 vPos;
-        ${shader.vertexShader}
+        ${parameters.vertexShader}
       `.replace(
         '#include <begin_vertex>',
         `#include <begin_vertex>
         vPos = position;`,
       );
-      shader.fragmentShader = `
+      parameters.fragmentShader = `
         #define ss(a, b, c) smoothstep(a, b, c)
         uniform float time;
         varying vec3 vPos;
         ${CYWARR_FBM}
-        ${shader.fragmentShader}
+        ${parameters.fragmentShader}
       `.replace(
         '#include <roughnessmap_fragment>',
         `
@@ -191,41 +203,45 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     };
 
     const cavity = new MeshLambertMaterial({
-      color: 0x000088,
+      color: new Color(theme.cavity),
       side: BackSide,
     });
     cavity.defines = { USE_UV: '' };
-    cavity.onBeforeCompile = (shader) => {
-      shader.uniforms.time = oracleSceneTime;
-      shader.vertexShader = `
+    cavity.onBeforeCompile = (parameters) => {
+      parameters.uniforms.time = oracleSceneTime;
+      parameters.uniforms.fluidColor = ballCavityUniforms.fluidColor;
+      parameters.vertexShader = `
         varying vec3 vPos;
-        ${shader.vertexShader}
+        ${parameters.vertexShader}
       `.replace(
         '#include <begin_vertex>',
         `#include <begin_vertex>
         vPos = position;`,
       );
-      shader.fragmentShader = `
+      parameters.fragmentShader = `
         #define ss(a, b, c) smoothstep(a, b, c)
         uniform float time;
+        uniform vec3 fluidColor;
         varying vec3 vPos;
         ${CYWARR_FBM}
-        ${shader.fragmentShader}
+        ${parameters.fragmentShader}
       `.replace(
-        'vec4 diffuseColor = vec4( diffuse, opacity );',
+        DIFFUSE_COLOR_LINE,
         `
-        vec3 col = diffuse;
-        float horizR = length(vPos.xz);
-        float rim = ss(0.02, 0.14, horizR);
-        col *= mix(1.06, 0.74, rim);
-
-        float shimmer = fbm(vPos + vec3(0.0, time * 0.2, 0.0));
-        col *= 1.0 + (shimmer - 0.5) * 0.06;
-
-        vec4 diffuseColor = vec4(col, opacity);
+        vec4 diffuseColor = vec4( fluidColor, opacity );
+        {
+          vec3 col = diffuseColor.rgb;
+          float horizR = length(vPos.xz);
+          float rim = ss(0.02, 0.14, horizR);
+          col *= mix(1.06, 0.74, rim);
+          float shimmer = fbm(vPos + vec3(0.0, time * 0.2, 0.0));
+          col *= 1.0 + (shimmer - 0.5) * 0.06;
+          diffuseColor.rgb = col;
+        }
         `,
       );
     };
+    cavityMatRef.current = cavity;
 
     // Unlit so the rim is always full-bright regardless of scene lighting
     // (cywarr's Lambert+full-white-ambient reads as effectively unlit). DoubleSide
@@ -233,32 +249,35 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     // White rim; the shader renders the woven thread valleys at col * 0.5,
     // giving a grey line shade automatically.
     const sides = new MeshBasicMaterial({
-      color: 0x1e50e6,
+      color: new Color(theme.sides),
       side: DoubleSide,
     });
     sides.defines = { USE_UV: '' };
-    sides.onBeforeCompile = (shader) => {
-      shader.fragmentShader = `
+    sides.onBeforeCompile = (parameters) => {
+      parameters.uniforms.fluidColor = ballSidesUniforms.fluidColor;
+      parameters.fragmentShader = `
         #define ss(a, b, c) smoothstep(a, b, c)
-        ${shader.fragmentShader}
+        uniform vec3 fluidColor;
+        ${parameters.fragmentShader}
       `.replace(
-        'vec4 diffuseColor = vec4( diffuse, opacity );',
+        DIFFUSE_COLOR_LINE,
         `
-        vec3 col = diffuse;
-        vec2 uv = vUv;
-
-        vec2 wUv = uv - 0.5;
-        wUv.y *= 5.;
-        wUv.y += sin(uv.x * PI2 * 100.) * 0.1;
-        float fw = length(fwidth(wUv * PI));
-        float l = ss(fw, 0., abs(sin(wUv.y * PI)));
-
-        col = mix(col * 0.5, col, l);
-
-        vec4 diffuseColor = vec4( col, opacity );
+        vec4 diffuseColor = vec4( fluidColor, opacity );
+        {
+          vec3 col = diffuseColor.rgb;
+          vec2 uv = vUv;
+          vec2 wUv = uv - 0.5;
+          wUv.y *= 5.;
+          wUv.y += sin(uv.x * PI2 * 100.) * 0.1;
+          float fw = length(fwidth(wUv * PI));
+          float l = ss(fw, 0., abs(sin(wUv.y * PI)));
+          col = mix(col * 0.5, col, l);
+          diffuseColor.rgb = col;
+        }
         `,
       );
     };
+    sidesMatRef.current = sides;
 
     const lens = new MeshStandardMaterial({
       envMapIntensity: 2.5,
@@ -269,8 +288,25 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
       roughness: 0,
     });
 
+    ballThemeMaterialSlots.cavity = cavity;
+    ballThemeMaterialSlots.sides = sides;
+
     return [shell, cavity, sides, lens];
   }, []);
+
+  useLayoutEffect(() => {
+    const palette = resolveBallThemePalette(packId);
+    ballCavityUniforms.fluidColor.value.set(palette.cavity);
+    ballSidesUniforms.fluidColor.value.set(palette.sides);
+    const cavityMat = cavityMatRef.current;
+    const sidesMat = sidesMatRef.current;
+    cavityMat?.color.set(palette.cavity);
+    sidesMat?.color.set(palette.sides);
+    // Bust program cache so onBeforeCompile re-binds fluidColor after pack change.
+    if (cavityMat) cavityMat.needsUpdate = true;
+    if (sidesMat) sidesMat.needsUpdate = true;
+    syncBallThemeOnMount(packId, reducedMotion);
+  }, [packId, reducedMotion]);
 
   useFrame((state) => {
     oracleSceneTime.value = state.clock.elapsedTime * oracleSceneTimeScale.value;

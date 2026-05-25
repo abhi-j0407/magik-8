@@ -3,6 +3,7 @@
  * Resolves CSS custom properties to computed sRGB for Three.js materials.
  */
 
+import { Color } from 'three';
 import type { ThemePack } from '../types/oracle';
 
 /** Subtle liquid / backdrop / rim accents per theme pack (plan §5.7). */
@@ -42,6 +43,43 @@ export const PACK_FLUID_ACCENTS: Record<
     rimLight: '#f0cccc',
   },
 };
+
+/**
+ * Ball / cavity / ink hex per pack — precomputed from index.css oklch tokens.
+ * Browsers expose oklch from getComputedStyle/canvas without sRGB hex, so Three.js
+ * cannot parse runtime CSS resolution; keep these in sync when palette CSS changes.
+ */
+export const PACK_BALL_PALETTE: Record<
+  ThemePack['id'],
+  { fluidDeep: string; fluidMid: string; fluidHi: string; answerGlow: string }
+> = {
+  classic: {
+    fluidDeep: '#000052',
+    fluidMid: '#001f80',
+    fluidHi: '#0055b7',
+    answerGlow: '#6096bb',
+  },
+  career: {
+    fluidDeep: '#2f1200',
+    fluidMid: '#5c3200',
+    fluidHi: '#a36f00',
+    answerGlow: '#c6952c',
+  },
+  party: {
+    fluidDeep: '#3f0000',
+    fluidMid: '#7b0000',
+    fluidHi: '#c90014',
+    answerGlow: '#de4f44',
+  },
+};
+
+/** Resolve pack ball color (hex) by pack id — no DOM / data-pack dependency. */
+export function resolvePackHex(
+  packId: ThemePack['id'],
+  key: keyof (typeof PACK_BALL_PALETTE)['classic'],
+): string {
+  return PACK_BALL_PALETTE[packId][key];
+}
 
 export const M8_CSS_VARS = {
   bg: '--m8-bg',
@@ -85,9 +123,49 @@ const FALLBACK_SRGB: Record<M8CssVarKey, string> = {
 };
 
 let colorProbe: HTMLSpanElement | null = null;
+let colorCanvas: HTMLCanvasElement | null = null;
+const colorParser = new Color();
 
-/** Resolve a theme token to computed `rgb(...)` for WebGL color inputs. */
-export function resolveM8Color(key: M8CssVarKey): string {
+/**
+ * Browsers may return `oklch(...)` from getComputedStyle; Three.js only accepts
+ * sRGB strings. Canvas fillStyle normalizes any CSS color to `#rrggbb`.
+ */
+export function normalizeCssColorToHex(css: string, fallbackRgb: string): string {
+  if (!css) {
+    colorParser.set(fallbackRgb);
+    return `#${colorParser.getHexString()}`;
+  }
+  if (css.startsWith('rgb')) {
+    colorParser.set(css);
+    return `#${colorParser.getHexString()}`;
+  }
+  if (typeof document === 'undefined') {
+    colorParser.set(fallbackRgb);
+    return `#${colorParser.getHexString()}`;
+  }
+  colorCanvas ??= document.createElement('canvas');
+  const ctx = colorCanvas.getContext('2d');
+  if (!ctx) {
+    colorParser.set(fallbackRgb);
+    return `#${colorParser.getHexString()}`;
+  }
+  ctx.fillStyle = '#000000';
+  ctx.fillStyle = css;
+  const parsed = ctx.fillStyle;
+  if (typeof parsed === 'string' && parsed.startsWith('#')) {
+    return parsed;
+  }
+  colorParser.set(fallbackRgb);
+  return `#${colorParser.getHexString()}`;
+}
+
+/** Resolve a theme token to `#rrggbb` for WebGL color inputs. */
+export function resolveM8Hex(key: M8CssVarKey): string {
+  return normalizeCssColorToHex(resolveM8ColorRaw(key), FALLBACK_SRGB[key]);
+}
+
+/** Resolve a theme token to computed CSS color (may be oklch in modern browsers). */
+export function resolveM8ColorRaw(key: M8CssVarKey): string {
   if (typeof document === 'undefined') return FALLBACK_SRGB[key];
   colorProbe ??= document.createElement('span');
   colorProbe.style.display = 'none';
@@ -95,4 +173,13 @@ export function resolveM8Color(key: M8CssVarKey): string {
   if (!colorProbe.isConnected) document.documentElement.appendChild(colorProbe);
   const resolved = getComputedStyle(colorProbe).color;
   return resolved && resolved !== '' ? resolved : FALLBACK_SRGB[key];
+}
+
+/** Resolve a theme token to computed `rgb(...)` for WebGL color inputs. */
+export function resolveM8Color(key: M8CssVarKey): string {
+  colorParser.set(resolveM8Hex(key));
+  const r = Math.round(colorParser.r * 255);
+  const g = Math.round(colorParser.g * 255);
+  const b = Math.round(colorParser.b * 255);
+  return `rgb(${r}, ${g}, ${b})`;
 }
