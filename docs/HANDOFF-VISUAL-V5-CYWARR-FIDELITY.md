@@ -1,11 +1,14 @@
 ---
 id: handoff-visual-v5-cywarr-fidelity
 version: 1.0.0
-status: complete
+status: superseded
 current_phase: F5-complete
+superseded_by: PLAN-VISUAL-V6-STUDIO-CHROME
 webgl_flag: off (prod flip overseer-only after manual flag-on sign-off)
 deploy_url: null
 ---
+
+> **Superseded** by [`HANDOFF-VISUAL-V6-STUDIO-CHROME.md`](./HANDOFF-VISUAL-V6-STUDIO-CHROME.md) — active track is Visual V6 Studio Chrome. Historical reference only.
 
 # Handoff — Visual V5 ("cywarr Ball Fidelity") Live Status
 
@@ -95,6 +98,12 @@ deploy_url: null
 
 [`PLAN-VISUAL-V4-CYWARR.md`](./PLAN-VISUAL-V4-CYWARR.md) and
 [`HANDOFF-VISUAL-V4-CYWARR.md`](./HANDOFF-VISUAL-V4-CYWARR.md) are **superseded** by this V5 track (`superseded_by: PLAN-VISUAL-V5-CYWARR-FIDELITY`).
+
+## V6 supersession
+
+This V5 track is **superseded** by Visual V6 Studio Chrome — see
+[`PLAN-VISUAL-V6-STUDIO-CHROME.md`](./PLAN-VISUAL-V6-STUDIO-CHROME.md) and
+[`HANDOFF-VISUAL-V6-STUDIO-CHROME.md`](./HANDOFF-VISUAL-V6-STUDIO-CHROME.md) (`superseded_by: PLAN-VISUAL-V6-STUDIO-CHROME`).
 
 ## Lighthouse (F5 measured)
 
