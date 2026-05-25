@@ -10,7 +10,7 @@ import { Effects } from './Effects';
 import { Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
 
-const BALL_SIZE = 'min(78vh, 440px)';
+const BALL_SIZE = 'min(78dvh, calc(100vw - 2.5rem), 440px)';
 
 /** DPR floor — AdaptiveDpr may lower further under load. */
 const DPR_MIN = 1;

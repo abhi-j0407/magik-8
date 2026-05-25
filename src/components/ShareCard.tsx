@@ -48,7 +48,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
           height: SHARE_CARD_HEIGHT,
           padding: '110px 80px',
           background:
-            'radial-gradient(ellipse at 50% 30%, oklch(20% 0.04 268) 0%, oklch(11% 0.012 270) 70%), var(--m8-bg)',
+            'radial-gradient(ellipse at 50% 30%, var(--m8-fluid-deep) 0%, oklch(11% 0.012 270) 70%), var(--m8-bg)',
           fontFamily: 'var(--m8-font-ui)',
           isolation: 'isolate',
           overflow: 'hidden',
