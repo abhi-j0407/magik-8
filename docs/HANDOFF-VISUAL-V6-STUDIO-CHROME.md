@@ -2,7 +2,7 @@
 id: handoff-visual-v6-studio-chrome
 version: 1.0.0
 status: active
-current_phase: F2
+current_phase: F3
 integration_branch: visual/v6-studio-chrome
 webgl_flag: off (prod flip overseer-only; V6 work tested flag-on)
 deploy_url: null
@@ -19,39 +19,36 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F1
+## Handoff — F2
 **Status:** complete
-**Agent:** F1 implementer
-**Branch / PR:** v6/f1-studio-env → visual/v6-studio-chrome — squash-merged @ 305ab1e (coordinator; no gh PR — auth pending)
-**Changed:**
-- src/three/Lighting.tsx — procedural Environment + 5 Lightformers; ambient 0.5/#6a6280; no HDRI
-- src/three/Ball.tsx — drop envMap; shell tint (0.85,0.78,1.0) + envMapIntensity 1.2; FBM unchanged
-- src/three/OracleScene.tsx — NeutralToneMapping @ 1.1; remove env preload
+**Agent:** F2 implementer
+**Branch / PR:** v6/f2-hole-surfaces → visual/v6-studio-chrome — squash-merged @ 1c5002e (coordinator)
+**Changed:** src/three/Ball.tsx — sides (molten copper + emissive + warm ridge tint), lens (envMapIntensity 2.5), cavity (radial gradient + FBM shimmer via oracleSceneTime)
 **Verified:** tsc ✓ · build ✓ · test ✓ (71) · e2e ✓ (5) · /code-review ✓ · flag-off regression ✓ · visual ✓
-**Acceptance:** procedural studio replaces dark HDRI; no TextureLoader/ENV_MAP_PATH/per-material envMap;
-shell bright violet chrome tint; Neutral tone map; tsc/build/test/e2e green; flag-off unchanged; shake/reveal pass
-**Integration:** scene.environment via drei `<Environment>`; shell+lens use scene env (no explicit envMap);
-NeutralToneMapping @ 1.1; shell Color(0.85,0.78,1.0) + envMapIntensity 1.2; sides/cavity/lens colours +
-lens.envMapIntensity 10 frozen for F2
-**Next:** F2 — molten amber/copper gasket + liquid cavity floor (Ball.tsx sides/lens/cavity only)
+**Acceptance:** §4.3 gasket 0xc8631e + emissive 0xff7a1a @0.3, sine-stripe kept; §4.4 lens 2.5; §4.5 cavity gradient+shimmer; shell/Lighting/OracleScene untouched; tsc/build/test/e2e green; flag-off unchanged
+**Integration:** Gasket 0xc8631e, emissive Color(0xff7a1a) @0.3, ridge mix(col*0.5, col*vec3(1.1,0.94,0.78), l); lens envMapIntensity 2.5; cavity rim ss(0.02,0.14, horizR), shimmer (fbm-0.5)*0.06 @ time*0.2
+**Next:** F3 — QA, delete env jpg, supersede V5 docs, finalize handoff
 **Blockers:** none
 **Notes for next agent:**
-- Tone map: NeutralToneMapping @ exposure 1.1 (AgX not tested; Neutral is locked default)
-- Lightformer values verbatim from § 4.1; floor fill rotation [-π/2,0,0], no target
-- lens.envMapIntensity still 10 — F2 drops to ~2.5
-- public/env/cywarr-env.jpg still bundled (748 KB); F3 deletes
-- OracleScene chunk ~1.05 MB gzipped ~300 KB; env jpg removal in F3 should shrink precache
+- Cavity reuses CYWARR_FBM + oracleSceneTime; horizR = length(vPos.xz), tune ss(0.02,0.14) on device if needed
+- One extra FBM eval per cavity fragment — watch low-end perf in F3 lighthouse
+- public/env/cywarr-env.jpg still bundled until F3 delete (~748 KB precache shrink expected)
+- Lens 2.5 balances F1 studio; do not raise toward 10
 ```
 
 ## Phase checklist
 
 - [x] **F1** — Studio environment + chrome
-- [ ] **F2** — Hole surfaces: molten gasket + liquid floor
+- [x] **F2** — Hole surfaces: molten gasket + liquid floor
 - [ ] **F3** — QA, cleanup, docs
 
 ## Active locks
 
-- **F2 (next to spawn)** owns: `src/three/Ball.tsx` (sides + lens + cavity material blocks only).
+- **F3 (next to spawn)** owns: `public/env/cywarr-env.jpg` (delete), `vite.config.ts` (only if env glob pinned),
+  `scripts/lighthouse.mjs` (only if thresholds need adjustment), `docs/PLAN-VISUAL-V5-CYWARR-FIDELITY.md`,
+  `docs/HANDOFF-VISUAL-V5-CYWARR-FIDELITY.md`, `docs/PLAN-VISUAL-V6-STUDIO-CHROME.md`,
+  `docs/HANDOFF-VISUAL-V6-STUDIO-CHROME.md`.
+- **Do NOT edit** any `src/three/*` render file (F1–F2 shipped).
 
 > Record file ownership here before spawning each phase; clear on merge. `Ball.tsx` is locked by F1, then
 > re-locked by F2 — never both at once.
@@ -89,9 +86,9 @@ lens.envMapIntensity 10 frozen for F2
 | Felt shake before reveal still works | ☑ | F1 — e2e |
 | Reduced-motion: shake skipped, FSM progresses | ☑ | F1 — e2e |
 | Flag-off = today's CSS behaviour | ☑ | F1 |
-| Molten amber/copper gasket with wavy lines clearly visible | ☐ | F2 |
-| Hole floor radial gradient + shimmer (text still crisp) | ☐ | F2 |
-| AnswerPanel triangle/8/Courier text unchanged | ☐ | F1+F2 |
+| Molten amber/copper gasket with wavy lines clearly visible | ☑ | F2 — implementer visual ✓ |
+| Hole floor radial gradient + shimmer (text still crisp) | ☑ | F2 |
+| AnswerPanel triangle/8/Courier text unchanged | ☑ | F1+F2 — e2e + code-review |
 | `public/env/cywarr-env.jpg` deleted, no dangling refs | ☐ | F3 |
 | Lighthouse flag-off ≥85 / flag-on ≥45 | ☐ | F3 |
 | V5 docs superseded; V6 handoff finalized | ☐ | F3 |
