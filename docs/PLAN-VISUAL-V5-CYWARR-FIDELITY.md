@@ -1,10 +1,13 @@
 ---
 id: plan-visual-v5-cywarr-fidelity
 version: 1.0.0
-status: complete
+status: superseded
 current_phase: F5-complete
+superseded_by: PLAN-VISUAL-V6-STUDIO-CHROME
 supersedes_render_layer: PLAN-VISUAL-V4-CYWARR (faithful port that rendered white/washed; this track makes it match cywarr)
 ---
+
+> **Superseded** by [`PLAN-VISUAL-V6-STUDIO-CHROME.md`](./PLAN-VISUAL-V6-STUDIO-CHROME.md) — V6 redesigns environment + tone mapping (procedural studio chrome) while keeping V5 geometry/FSM. Historical reference only.
 
 # Plan — Visual V5 ("cywarr Ball Fidelity")
 
