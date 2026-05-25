@@ -1,24 +1,20 @@
-import { useFrame, useLoader } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
-import type { Group, Mesh, Texture } from 'three';
+import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import type { Group, Mesh } from 'three';
 import {
   BackSide,
   Color,
-  EquirectangularReflectionMapping,
   MeshLambertMaterial,
   MeshStandardMaterial,
   PlaneGeometry,
   SphereGeometry,
   Spherical,
-  SRGBColorSpace,
-  TextureLoader,
   Vector3,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { useOracle } from '../context/OracleContext';
 import type { OraclePhase } from '../types/oracle';
 import { AnswerPanel } from './AnswerPanel';
-import { ENV_MAP_PATH } from './Lighting';
 import { useOracleChoreography } from './useOracleChoreography';
 
 export const BALL_RADIUS = 1;
@@ -137,7 +133,6 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
   const { result } = useOracle();
   const jitterRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
-  const envTex = useLoader(TextureLoader, ENV_MAP_PATH) as Texture;
 
   useOracleChoreography(jitterRef, {
     phase,
@@ -148,17 +143,12 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
 
   const geometry = useMemo(() => buildCywarrBallGeometry(BALL_RADIUS), []);
 
-  useEffect(() => {
-    envTex.colorSpace = SRGBColorSpace;
-    envTex.mapping = EquirectangularReflectionMapping;
-  }, [envTex]);
-
   const materials = useMemo(() => {
     const shell = new MeshStandardMaterial({
-      envMap: envTex,
-      color: new Color('indigo').addScalar(0.25).multiplyScalar(5),
+      color: new Color(0.85, 0.78, 1.0),
       roughness: 0.75,
       metalness: 1,
+      envMapIntensity: 1.2,
     });
     shell.defines = { USE_UV: '' };
     shell.onBeforeCompile = (shader) => {
@@ -232,7 +222,6 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     };
 
     const lens = new MeshStandardMaterial({
-      envMap: envTex,
       envMapIntensity: 10,
       color: 0xffffff,
       transparent: true,
@@ -242,7 +231,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     });
 
     return [shell, cavity, sides, lens];
-  }, [envTex]);
+  }, []);
 
   useFrame((state) => {
     oracleSceneTime.value = state.clock.elapsedTime * oracleSceneTimeScale.value;
