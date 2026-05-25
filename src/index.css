@@ -67,7 +67,7 @@
   --m8-ease-ink:        cubic-bezier(.16, .8, .3, 1);
 
   /* layout */
-  --m8-ball-size:       min(70vh, 360px);
+  --m8-ball-size:       min(78vh, 440px);
   --m8-triangle-w:      48%;
   --m8-radius-chip:     999px;
   --m8-radius-sheet:    16px;
@@ -116,6 +116,19 @@ body {
   mix-blend-mode: overlay;
   opacity: 0.08;
   z-index: 50;
+}
+
+/* heavily-blurred cobalt gradient — full-page depth behind the ball/UI */
+.m8-bg-aurora {
+  position: absolute;
+  inset: -25%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 36%, oklch(46% 0.180 252 / 0.42), transparent 70%),
+    radial-gradient(70% 62% at 28% 72%, oklch(30% 0.170 258 / 0.32), transparent 72%),
+    radial-gradient(82% 70% at 76% 60%, oklch(22% 0.140 264 / 0.30), transparent 75%);
+  filter: blur(60px);
 }
 
 /* radial vignette */

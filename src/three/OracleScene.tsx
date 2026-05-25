@@ -10,7 +10,7 @@ import { Effects } from './Effects';
 import { Lighting } from './Lighting';
 import { useWebglCapability } from './useWebglCapability';
 
-const BALL_SIZE = 'min(70vh, 360px)';
+const BALL_SIZE = 'min(78vh, 440px)';
 
 /** DPR floor — AdaptiveDpr may lower further under load. */
 const DPR_MIN = 1;
@@ -27,7 +27,11 @@ function useCoarsePointer() {
   return coarse;
 }
 
-const CAM_POS = new Vector3(0, 1, 0.375).setLength(3.75);
+const CAM_POS = new Vector3(0, 1, 0.375).setLength(2.2);
+
+/** Dolly-zoom clamps (world units from origin); ball radius is 1. */
+const ZOOM_MIN_DISTANCE = 2;
+const ZOOM_MAX_DISTANCE = 4.5;
 
 /** Euclidean px — orbit drag must not fire shake/reset (plan F1). */
 const ORBIT_DRAG_THRESHOLD_PX = 8;
@@ -44,7 +48,10 @@ function SceneControls() {
       enabled
       enableDamping
       enablePan={false}
-      enableZoom={false}
+      enableZoom
+      zoomSpeed={0.6}
+      minDistance={ZOOM_MIN_DISTANCE}
+      maxDistance={ZOOM_MAX_DISTANCE}
       minPolarAngle={0}
       maxPolarAngle={Math.PI}
     />
@@ -107,7 +114,7 @@ function OracleCanvas({ canvasKey, onContextLost, onContextRestored }: OracleCan
           gl.domElement.removeEventListener('webglcontextrestored', onRestored);
         };
       }}
-      style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
+      style={{ width: '100%', height: '100%', touchAction: 'none' }}
     >
       <SceneControls />
       <AdaptiveDpr pixelated />

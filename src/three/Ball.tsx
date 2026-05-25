@@ -4,6 +4,8 @@ import type { Group, Mesh } from 'three';
 import {
   BackSide,
   Color,
+  DoubleSide,
+  MeshBasicMaterial,
   MeshLambertMaterial,
   MeshStandardMaterial,
   PlaneGeometry,
@@ -145,7 +147,9 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
 
   const materials = useMemo(() => {
     const shell = new MeshStandardMaterial({
-      color: new Color(0.85, 0.78, 1.0),
+      // Boosted indigo (cywarr recipe) — at metalness 1 this tints the env
+      // reflection so the whole ball reads as one unified purple chrome.
+      color: new Color('indigo').addScalar(0.75).multiplyScalar(0),
       roughness: 0.75,
       metalness: 1,
       envMapIntensity: 1.2,
@@ -223,18 +227,19 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
       );
     };
 
-    const sides = new MeshLambertMaterial({
-      color: 0xc8631e,
-      emissive: new Color(0xff7a1a),
-      emissiveIntensity: 0.3,
+    // Unlit so the rim is always full-bright regardless of scene lighting
+    // (cywarr's Lambert+full-white-ambient reads as effectively unlit). DoubleSide
+    // so the thin bridging wall is never back-face culled at grazing hole angles.
+    // White rim; the shader renders the woven thread valleys at col * 0.5,
+    // giving a grey line shade automatically.
+    const sides = new MeshBasicMaterial({
+      color: 0x1e50e6,
+      side: DoubleSide,
     });
     sides.defines = { USE_UV: '' };
     sides.onBeforeCompile = (shader) => {
       shader.fragmentShader = `
         #define ss(a, b, c) smoothstep(a, b, c)
-        #ifndef PI2
-        #define PI2 6.28318530718
-        #endif
         ${shader.fragmentShader}
       `.replace(
         'vec4 diffuseColor = vec4( diffuse, opacity );',
@@ -244,11 +249,11 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
 
         vec2 wUv = uv - 0.5;
         wUv.y *= 5.;
-        wUv.y += sin(uv.x * PI2 * 100.) * 0.04;
+        wUv.y += sin(uv.x * PI2 * 100.) * 0.1;
         float fw = length(fwidth(wUv * PI));
         float l = ss(fw, 0., abs(sin(wUv.y * PI)));
 
-        col = mix(col * 0.5, col * vec3(1.1, 0.94, 0.78), l);
+        col = mix(col * 0.5, col, l);
 
         vec4 diffuseColor = vec4( col, opacity );
         `,
@@ -259,7 +264,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
       envMapIntensity: 2.5,
       color: 0xffffff,
       transparent: true,
-      opacity: 0.25,
+      opacity: 0,
       metalness: 1,
       roughness: 0,
     });
