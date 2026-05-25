@@ -2,7 +2,7 @@
 id: plan-visual-v6-studio-chrome
 version: 1.0.0
 status: active
-current_phase: F1
+current_phase: F2
 supersedes_render_layer: PLAN-VISUAL-V5-CYWARR-FIDELITY (faithful cywarr port; V6 redesigns the *environment* so the chrome reads bright violet/amber on a dark page instead of dingy/coppery)
 ---
 

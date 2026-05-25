@@ -2,7 +2,7 @@
 id: handoff-visual-v6-studio-chrome
 version: 1.0.0
 status: active
-current_phase: F1
+current_phase: F2
 integration_branch: visual/v6-studio-chrome
 webgl_flag: off (prod flip overseer-only; V6 work tested flag-on)
 deploy_url: null
@@ -19,30 +19,39 @@ deploy_url: null
 ## Latest handoff
 
 ```markdown
-## Handoff — F0 (kickoff)
-**Status:** ready
-**Agent:** coordinator
-**Branch / PR:** integration branch visual/v6-studio-chrome created off main; no phase merged yet
-**Changed:** docs only (PLAN + HANDOFF + COORDINATOR for V6)
-**Verified:** n/a (no code yet)
-**Acceptance:** n/a
-**Integration:** V6 docs in place; F1 may begin. All phase PRs target visual/v6-studio-chrome, NOT main.
-**Next:** F1 — studio environment + chrome (procedural Lightformer env, Neutral tone map, pale-violet shell)
+## Handoff — F1
+**Status:** complete
+**Agent:** F1 implementer
+**Branch / PR:** v6/f1-studio-env → visual/v6-studio-chrome — squash-merged @ 305ab1e (coordinator; no gh PR — auth pending)
+**Changed:**
+- src/three/Lighting.tsx — procedural Environment + 5 Lightformers; ambient 0.5/#6a6280; no HDRI
+- src/three/Ball.tsx — drop envMap; shell tint (0.85,0.78,1.0) + envMapIntensity 1.2; FBM unchanged
+- src/three/OracleScene.tsx — NeutralToneMapping @ 1.1; remove env preload
+**Verified:** tsc ✓ · build ✓ · test ✓ (71) · e2e ✓ (5) · /code-review ✓ · flag-off regression ✓ · visual ✓
+**Acceptance:** procedural studio replaces dark HDRI; no TextureLoader/ENV_MAP_PATH/per-material envMap;
+shell bright violet chrome tint; Neutral tone map; tsc/build/test/e2e green; flag-off unchanged; shake/reveal pass
+**Integration:** scene.environment via drei `<Environment>`; shell+lens use scene env (no explicit envMap);
+NeutralToneMapping @ 1.1; shell Color(0.85,0.78,1.0) + envMapIntensity 1.2; sides/cavity/lens colours +
+lens.envMapIntensity 10 frozen for F2
+**Next:** F2 — molten amber/copper gasket + liquid cavity floor (Ball.tsx sides/lens/cavity only)
 **Blockers:** none
-**Notes for next agent:** Root cause = metalness:1 shell mirrors a dark brown HDRI. F1 replaces the env
-with drei <Environment>+<Lightformer> and drops per-material envMap so materials use scene.environment.
-Do NOT delete public/env/cywarr-env.jpg until F3. Keep the FBM shell shader + AnswerPanel untouched.
+**Notes for next agent:**
+- Tone map: NeutralToneMapping @ exposure 1.1 (AgX not tested; Neutral is locked default)
+- Lightformer values verbatim from § 4.1; floor fill rotation [-π/2,0,0], no target
+- lens.envMapIntensity still 10 — F2 drops to ~2.5
+- public/env/cywarr-env.jpg still bundled (748 KB); F3 deletes
+- OracleScene chunk ~1.05 MB gzipped ~300 KB; env jpg removal in F3 should shrink precache
 ```
 
 ## Phase checklist
 
-- [ ] **F1** — Studio environment + chrome
+- [x] **F1** — Studio environment + chrome
 - [ ] **F2** — Hole surfaces: molten gasket + liquid floor
 - [ ] **F3** — QA, cleanup, docs
 
 ## Active locks
 
-- **F1 (next to spawn)** owns: `src/three/Lighting.tsx`, `src/three/OracleScene.tsx`, `src/three/Ball.tsx`.
+- **F2 (next to spawn)** owns: `src/three/Ball.tsx` (sides + lens + cavity material blocks only).
 
 > Record file ownership here before spawning each phase; clear on merge. `Ball.tsx` is locked by F1, then
 > re-locked by F2 — never both at once.
@@ -65,7 +74,7 @@ Do NOT delete public/env/cywarr-env.jpg until F3. Keep the FBM shell shader + An
 | Gasket rim | Molten amber/copper (recolor; keep wavy-stripe shader) |
 | Hole floor | Subtle liquid depth (radial gradient + shimmer) |
 | Env technique | Procedural drei `<Environment>` + `<Lightformer>` (no photo HDRI) |
-| Tone mapping | `NeutralToneMapping` @ exposure 1.1 (A/B fallback `AgXToneMapping`) — confirm in F1 |
+| Tone mapping | `NeutralToneMapping` @ exposure 1.1 (F1 confirmed; AgX not A/B'd) |
 | Branch policy | Integration branch `visual/v6-studio-chrome`; merge → `main` only at the end (human) |
 | Deploy | Overseer-only |
 
@@ -73,16 +82,16 @@ Do NOT delete public/env/cywarr-env.jpg until F3. Keep the FBM shell shader + An
 
 | Check | Pass | Notes |
 |-------|------|-------|
-| Shell reads bright violet chrome (amber+violet highlights), not coppery | ☐ | F1 |
-| Lower hemisphere not pure black (floor fill works) | ☐ | F1 |
-| Reflections sweep on drag-rotate | ☐ | F1 |
-| Tone mapping chosen (Neutral vs AgX) | ☐ | F1 — log in Decisions |
+| Shell reads bright violet chrome (amber+violet highlights), not coppery | ☑ | F1 — implementer visual ✓ |
+| Lower hemisphere not pure black (floor fill works) | ☑ | F1 |
+| Reflections sweep on drag-rotate | ☑ | F1 |
+| Tone mapping chosen (Neutral vs AgX) | ☑ | F1 — Neutral @ 1.1 |
+| Felt shake before reveal still works | ☑ | F1 — e2e |
+| Reduced-motion: shake skipped, FSM progresses | ☑ | F1 — e2e |
+| Flag-off = today's CSS behaviour | ☑ | F1 |
 | Molten amber/copper gasket with wavy lines clearly visible | ☐ | F2 |
 | Hole floor radial gradient + shimmer (text still crisp) | ☐ | F2 |
 | AnswerPanel triangle/8/Courier text unchanged | ☐ | F1+F2 |
-| Felt shake before reveal still works | ☐ | F1 (regression) |
-| Reduced-motion: shake skipped, FSM progresses | ☐ | F1 (regression) |
-| Flag-off = today's CSS behaviour | ☐ | each phase |
 | `public/env/cywarr-env.jpg` deleted, no dangling refs | ☐ | F3 |
 | Lighthouse flag-off ≥85 / flag-on ≥45 | ☐ | F3 |
 | V5 docs superseded; V6 handoff finalized | ☐ | F3 |
