@@ -56,6 +56,7 @@ function OracleScreen() {
 
   return (
     <main className="relative isolate mx-auto flex min-h-dvh max-w-lg flex-col items-center gap-4 overflow-hidden bg-(--m8-bg) px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] font-(--m8-font-ui) text-(--m8-chrome) m8-grain m8-vignette">
+      <div className="m8-bg-aurora" aria-hidden="true" />
       <h1 className="sr-only">Magik 8</h1>
 
       <header className="relative z-10 flex w-full items-center justify-between gap-2">
