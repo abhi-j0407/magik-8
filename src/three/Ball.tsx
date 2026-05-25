@@ -190,9 +190,43 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
       color: 0x000088,
       side: BackSide,
     });
+    cavity.defines = { USE_UV: '' };
+    cavity.onBeforeCompile = (shader) => {
+      shader.uniforms.time = oracleSceneTime;
+      shader.vertexShader = `
+        varying vec3 vPos;
+        ${shader.vertexShader}
+      `.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vPos = position;`,
+      );
+      shader.fragmentShader = `
+        #define ss(a, b, c) smoothstep(a, b, c)
+        uniform float time;
+        varying vec3 vPos;
+        ${CYWARR_FBM}
+        ${shader.fragmentShader}
+      `.replace(
+        'vec4 diffuseColor = vec4( diffuse, opacity );',
+        `
+        vec3 col = diffuse;
+        float horizR = length(vPos.xz);
+        float rim = ss(0.02, 0.14, horizR);
+        col *= mix(1.06, 0.74, rim);
+
+        float shimmer = fbm(vPos + vec3(0.0, time * 0.2, 0.0));
+        col *= 1.0 + (shimmer - 0.5) * 0.06;
+
+        vec4 diffuseColor = vec4(col, opacity);
+        `,
+      );
+    };
 
     const sides = new MeshLambertMaterial({
-      color: 0xaa0000,
+      color: 0xc8631e,
+      emissive: new Color(0xff7a1a),
+      emissiveIntensity: 0.3,
     });
     sides.defines = { USE_UV: '' };
     sides.onBeforeCompile = (shader) => {
@@ -214,7 +248,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
         float fw = length(fwidth(wUv * PI));
         float l = ss(fw, 0., abs(sin(wUv.y * PI)));
 
-        col = mix(col * 0.5, col, l);
+        col = mix(col * 0.5, col * vec3(1.1, 0.94, 0.78), l);
 
         vec4 diffuseColor = vec4( col, opacity );
         `,
@@ -222,7 +256,7 @@ export function Ball({ phase, onAnimationDone, reducedMotion = false }: BallProp
     };
 
     const lens = new MeshStandardMaterial({
-      envMapIntensity: 10,
+      envMapIntensity: 2.5,
       color: 0xffffff,
       transparent: true,
       opacity: 0.25,
